@@ -14,13 +14,6 @@
 
 .align 4
 
-.word 0
-gdt_desc:
-	.word gdt_bottom - gdt - 1
-	.long gdt
-
-	.align 4
-
 tss_size:
     .long tss_bottom - tss - 1
 
@@ -102,8 +95,6 @@ ldt_bottom:
 idt_desc_ptr:
     .word idt_bottom - idt - 1
     .long idt
-
-
     .align  16
 idt:
 _idt:
@@ -112,3 +103,10 @@ _idt:
     .endr
 
 idt_bottom:
+
+.word 0
+gdt_desc:
+	.word gdt_bottom - gdt - 1
+	.long gdt
+
+	.align 4
