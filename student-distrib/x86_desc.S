@@ -104,7 +104,9 @@ _idt:
 
 idt_bottom:
 
-.word 0
+.align 4	#just in case
+
+	.word 0
 gdt_desc:
 	.word gdt_bottom - gdt - 1
 	.long gdt
