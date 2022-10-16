@@ -1,4 +1,8 @@
-/*This sets up paging and identifies structs related to paging*/
+/*
+ * This sets up paging and identifies structs related to paging
+ * This also supplies functions to easily edit the page directory
+ * with new pagetables or other entries
+ */
 
 #ifndef _PAGING_H
 #define _PAGING_H
@@ -89,5 +93,7 @@ union tblEntry
 void pageEnable();
 
 void spawnDir();
+
+void setup();	//this function makes the default page directory setup for 3.1
 
 #endif
