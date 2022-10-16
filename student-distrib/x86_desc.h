@@ -147,18 +147,18 @@ do {                                                            \
 /* An interrupt descriptor entry (goes into the IDT) */
 typedef union idt_desc_t {
     uint32_t val[2];
-    struct {
-        uint16_t offset_15_00;
-        uint16_t seg_selector;
-        uint8_t  reserved4;
-        uint32_t reserved3 : 1;
-        uint32_t reserved2 : 1;
-        uint32_t reserved1 : 1;
-        uint32_t size      : 1;
-        uint32_t reserved0 : 1;
-        uint32_t dpl       : 2;
-        uint32_t present   : 1;
-        uint16_t offset_31_16;
+    struct {        //kernel when i=x80
+        uint16_t offset_15_00;      //dont init
+        uint16_t seg_selector;      //kernel_cs
+        uint8_t  reserved4;         //0
+        uint32_t reserved3 : 1; //0
+        uint32_t reserved2 : 1; //1
+        uint32_t reserved1 : 1;//1
+        uint32_t size      : 1;//1
+        uint32_t reserved0 : 1;//1 //0
+        uint32_t dpl       : 2; //0 user, 3 kernel 
+        uint32_t present   : 1; //0 unless i=x80 or x21 && if i <21
+        uint16_t offset_31_16; //dont init
     } __attribute__ ((packed));
 } idt_desc_t;
 
