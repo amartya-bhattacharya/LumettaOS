@@ -24,6 +24,8 @@
 
 void Default_except()
     {
+        printf("invalid");
+        while(1){}
         return;
     }
 void DE()
@@ -184,6 +186,7 @@ void RTC()
 
 
 void init_idt (){
+    
      int j;
 
 //typedef void (*func) (void);
@@ -221,7 +224,7 @@ exceptions[40]=RTC;
         idt[i].reserved2 = 1;
         idt[i].reserved1 = 1;
         idt[i].size = 1;
-        idt[i].reserved0 = 1 ;
+        idt[i].reserved0 = 0;
         idt[i].dpl = 0;
         idt[i].present =0;
 
@@ -230,10 +233,9 @@ exceptions[40]=RTC;
             idt[i].dpl = 3;
 
         }
-        if(i==0x80 || i<=0x21){
+        if(i==0x80 || i<=19 || i==33 || i==40){
             idt[i].present = 1;
         }
         SET_IDT_ENTRY(idt[i], exceptions[i]);
     }
-    
 }
