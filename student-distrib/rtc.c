@@ -29,7 +29,6 @@ void rtc_init(void) {
     outb(RTC_REG_A, RTC_PORT);      // set the index again
     outb((prev & 0xF0) | 6, RTC_DATA);    // write the previous value ORed with 0x40
 
-    // sti();                          // enable interrupts
     enable_irq(RTC_IRQ);
 }
 
@@ -40,7 +39,7 @@ void rtc_handler(void) {
     inb(RTC_DATA);
     // test_interrupts();
     //clear();
-    printf("RTC HANDLER\n");
-    //putc('R');
+    //printf("RTC HANDLER\n");
+    // putc('R');
     send_eoi(RTC_IRQ);
 }

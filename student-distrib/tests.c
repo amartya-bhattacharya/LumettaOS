@@ -55,13 +55,6 @@ int idt_test_div_by_zero() {
 	return result;
 }
 
-int rtc_test_ints() {
-	TEST_HEADER;
-
-	test_interrupts();
-	return 0;
-}
-
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -73,5 +66,4 @@ void launch_tests(){
 	// launch your tests here
 	//TEST_OUTPUT("idt_test", idt_test());
 	//TEST_OUTPUT("divide by zero", idt_test_div_by_zero());
-	//TEST_OUTPUT("rtc", rtc_test_ints());
 }

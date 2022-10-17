@@ -227,9 +227,6 @@ void idt_init(){
         if(j==0x80 || ((j<=19) && (j!=15 && (j != 1))) || j==33 || j==40){
             idt[j].present = 1;
         }
-        // if (j <= 19) {
-        //     idt[j].present = 1;
-        // }
         SET_IDT_ENTRY(idt[j], exceptions[j]);
     }
 }
