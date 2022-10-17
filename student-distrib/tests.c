@@ -29,7 +29,7 @@ static inline void assertion_failure(){
  * Coverage: Load IDT, IDT definition
  * Files: x86_desc.h/S
  */
-int idt_test(){
+int idt_test() {
 	TEST_HEADER;
 
 	int i;
@@ -46,14 +46,22 @@ int idt_test(){
 }
 
 // add more tests here
-int idt_test_div_by_zero(){
-	int i;
-	i=16/0;
-	return;
-	}
+int idt_test_div_by_zero() {
+	TEST_HEADER;
 
-// 	return result;
-// }
+	int i, result;
+	i=16/0;
+	result =PASS;
+	return result;
+}
+
+int rtc_test_ints() {
+	TEST_HEADER;
+
+	test_interrupts();
+	return 0;
+}
+
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -62,7 +70,8 @@ int idt_test_div_by_zero(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("idt_test", idt_test());
-	TEST_OUTPUT("diveide by zero", idt_test_div_by_zero());
 	// launch your tests here
+	//TEST_OUTPUT("idt_test", idt_test());
+	//TEST_OUTPUT("divide by zero", idt_test_div_by_zero());
+	//TEST_OUTPUT("rtc", rtc_test_ints());
 }
