@@ -90,9 +90,14 @@ union tblEntry
 	struct pgTblEntry ent;
 };
 
+//enables paging (and PSE extension)
 void pageEnable();
 
+//clears pageDir
 void spawnDir();
+
+//clears a pagetable
+void spawnTbl(union tblEntry tab[1024]);
 
 void setup();	//this function makes the default page directory setup for 3.1
 
