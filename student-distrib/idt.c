@@ -2,6 +2,7 @@
  * vim:ts=4 noexpandtab
  */
 
+#include "x86_desc.h"
 #include "idt.h"
 #include "lib.h"
 #include "keyboard.h"
