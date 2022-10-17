@@ -60,6 +60,7 @@ void spawnTbl(union tblEntry tab[1024])
  */
 void setup()
 {
+	int i;
 	union dirEntry vidTable;
 	union dirEntry kernel;	//this is the 4MiB page for the kernel
 	union tblEntry vidPg;
@@ -69,10 +70,15 @@ void setup()
 	kernel.whole.rw = 1;
 	kernel.whole.ps = 1;
 	kernel.whole.add_22_31 = 0x400000 >> 22;	//0x400000 is 4mb kernel.val |= 0x400000 also works
-	vidPg.val = 0x3;	//sets p and rw bits
-	vidPg.ent.add = 0xB8000 >> 12;	//bits 31-12 (just 0xB8)
+	//vidPg.val = 0x3;	//sets p and rw bits
+	//vidPg.ent.add = 0xB8000 >> 12;	//bits 31-12 (just 0xB8)
 	spawnTbl(table);
-	table[0xB8] = vidPg;	//vidmem starts at 0xB8000, divide by 4KiB to get index
+	for(i = 0xB8;i < 0xC0;i++)
+	{
+		vidPg.val = 0x3;
+		vidPg.ent.add = i;	//assigns the physical memory to be the same as virtual memory
+		table[i] = vidPg;	//vidmem starts at 0xB8000, divide by 4KiB to get index
+	}
 	spawnDir();
 	pageDir[0] = vidTable;
 	pageDir[1] = kernel;
