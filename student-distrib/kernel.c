@@ -146,10 +146,8 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
     idt_init();
-    //rtc_init();
+    rtc_init();
     keyboard_init();
-
-    //clear();
     
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
@@ -161,7 +159,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
 #ifdef RUN_TESTS
     /* Run tests */
-    launch_tests();
+    // launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
 

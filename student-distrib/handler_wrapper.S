@@ -7,8 +7,9 @@
 .align 4
 keyboard_handler_wrapper:
     pushal
-    cld /* clear direction flag */
+    pushfl
     call keyboard_handler
+    popfl
     popal
     iret
 
@@ -16,7 +17,8 @@ keyboard_handler_wrapper:
 .align 4
 rtc_handler_wrapper:
     pushal
-    cld /* clear direction flag */
+    pushfl
     call rtc_handler
+    popfl
     popal
     iret

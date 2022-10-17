@@ -45,6 +45,8 @@ void i8259_init(void) {
 
     outb(master_mask, MASTER_8259_PORT + 1);
     outb(slave_mask, SLAVE_8259_PORT + 1);
+
+    enable_irq(2);
 }
 
 /* Enable (unmask) the specified IRQ */

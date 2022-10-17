@@ -140,35 +140,37 @@ char scancodes_upper[59] = {
 // if so, need to make sure it's called after IDT is initialized
 void keyboard_init(void) {
     enable_irq(KEYBOARD_IRQ);
-    // outb(KEYBOARD_DATA_PORT, KEYBOARD_STATUS_PORT);
 }
 
 // keyboard handle function: convert scancode into char, putc
 void keyboard_handler(void) {
     // get scancode
+    // disable_irq(KEYBOARD_IRQ);
     uint8_t scancode = inb(KEYBOARD_DATA_PORT);
     // check if scancode is valid
-    if (scancode > 0x3A) {
-        // invalid scancode
-        return;
-    }
-    // check if scancode is a special key
-    if (scancode == 0x2A || scancode == 0x36) {
-        // shift key
-        // handle
-        return;
-    }
-    if (scancode == 0x3A) {
-        // caps lock key
-        // handle
-        return;
-    }
+    // if (scancode > 0x3A) {
+    //     // invalid scancode
+    //     return;
+    // }
+    // // check if scancode is a special key
+    // if (scancode == 0x2A || scancode == 0x36) {
+    //     // shift key
+    //     // handle
+    //     return;
+    // }
+    // if (scancode == 0x3A) {
+    //     // caps lock key
+    //     // handle
+    //     return;
+    // }
     // valid scancode
+    // for shift just add the offset for the array
     // convert scancode to char
-    char c = scancodes[scancode];
-    // putc
-    putc(c);
+    if (scancode <= 59) {
+        char c = scancodes[scancode];
+        putc(c);
+    }
     // send EOI
+    // enable_irq(KEYBOARD_IRQ);
     send_eoi(KEYBOARD_IRQ);
-    
 }
