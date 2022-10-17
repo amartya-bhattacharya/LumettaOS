@@ -45,12 +45,19 @@ int idt_test() {
 	return result;
 }
 
-// add more tests here
 int idt_test_div_by_zero() {
 	TEST_HEADER;
 
 	int i, result;
 	i=16/0;
+	result =PASS;
+	return result;
+}
+
+int page_fault() {
+	TEST_HEADER;
+	int result;
+	asm("movl 0, %eax\n\t");
 	result =PASS;
 	return result;
 }
@@ -64,6 +71,8 @@ int idt_test_div_by_zero() {
 /* Test suite entry point */
 void launch_tests(){
 	// launch your tests here
-	//TEST_OUTPUT("idt_test", idt_test());
-	//TEST_OUTPUT("divide by zero", idt_test_div_by_zero());
+	TEST_OUTPUT("page fault", page_fault());
+	TEST_OUTPUT("idt_test", idt_test());
+	TEST_OUTPUT("divide by zero", idt_test_div_by_zero());
+	// to test RTC, use test_interrupts function
 }
