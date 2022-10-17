@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "paging.h"
 
 #define PASS 1
 #define FAIL 0
@@ -18,7 +19,7 @@ static inline void assertion_failure(){
 }
 
 
-/* Checkpoint 1 tests */
+/* Checkpoint 1 tests */				// TODO: improve tests by printing useful exception info
 
 /* IDT Test - Example
  * 
@@ -45,22 +46,47 @@ int idt_test() {
 	return result;
 }
 
+
+/* IDT Test - Divide by Zero
+ * 
+ * Asserts that divide by zero exception is handled
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: Load IDT, IDT definition, divide by zero exception
+ * Files: x86_desc.h/S
+ */
 int idt_test_div_by_zero() {
 	TEST_HEADER;
 
 	int i, result;
-	i=16/0;
-	result =PASS;
+	i = 16/0;
+	result = PASS;
+
 	return result;
 }
 
+
+/* Paging Test - Page Fault
+ * 
+ * Asserts that page fault exception is handled
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: Page fault exception
+ * Files: x86_desc.h/S
+ */
 int page_fault() {
 	TEST_HEADER;
+
 	int result;
+	printf("size of unions: %d, %d\n", sizeof(union dirEntry), sizeof(union tblEntry));
 	asm("movl 0, %eax\n\t");
-	result =PASS;
+	result = PASS;
+
 	return result;
 }
+
 
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
@@ -70,9 +96,7 @@ int page_fault() {
 
 /* Test suite entry point */
 void launch_tests(){
-	// launch your tests here
 	TEST_OUTPUT("page fault", page_fault());
 	TEST_OUTPUT("idt_test", idt_test());
 	TEST_OUTPUT("divide by zero", idt_test_div_by_zero());
-	// to test RTC, use test_interrupts function
 }

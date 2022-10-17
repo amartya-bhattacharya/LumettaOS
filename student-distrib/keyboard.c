@@ -6,12 +6,8 @@
 #include "i8259.h"
 #include "lib.h"
 #include "types.h"
-#include "x86_desc.h"
-#include "debug.h"
-#include "tests.h"
 
 /* Local variables */
-// keycode array
 char scancodes[59] = {
     '\0',                                       // 0x00
     '\0',                                       // 0x01
@@ -55,7 +51,7 @@ char scancodes[59] = {
     ';',                                        // 0x27
     '\'',                                       // 0x28
     '`',                                        // 0x29
-    '\0',                                       // 0x2A // handle shift
+    '\0',                                       // 0x2A // shift
     '\\',                                       // 0x2B
     'z',                                        // 0x2C
     'x',                                        // 0x2D
@@ -67,12 +63,13 @@ char scancodes[59] = {
     ',',                                        // 0x33
     '.',                                        // 0x34
     '/',                                        // 0x35
-    '\0',                                       // 0x36 // handle shift
+    '\0',                                       // 0x36 // shift
     '\0',                                       // 0x37
     '\0',                                       // 0x38
     ' ',                                        // 0x39
-    '\0',                                       // 0x3A // handle caps lock
+    '\0',                                       // 0x3A // caps lock
 };
+
 
 char scancodes_upper[59] = {
     '\0',                                       // 0x00
@@ -133,20 +130,33 @@ char scancodes_upper[59] = {
     '\0',                                       // 0x37
     '\0',                                       // 0x38
     ' ',                                        // 0x39
-    '\0',                                       // 0x3A // handle caps lock
+    '\0',                                       // 0x3A // caps lock
 };
 
-// need a keyboard init function?
-// if so, need to make sure it's called after IDT is initialized
+
+/*
+ * keyboard_init
+ * DESCRIPTION: Initializes the keyboard
+ * INPUTS: none
+ * OUTPUTS: none
+ * RETURN VALUE: none
+ * SIDE EFFECTS: Enables the keyboard IRQ
+ */
 void keyboard_init(void) {
     enable_irq(KEYBOARD_IRQ);
 }
 
-// keyboard handle function: convert scancode into char, putc
+/*
+ * keyboard_handler
+ * Converts scancode to char and prints to screen
+ * DESCRIPTION: Handles keyboard interrupts
+ * INPUTS: none
+ * OUTPUTS: none
+ * RETURN VALUE: none
+ * SIDE EFFECTS: Prints the character corresponding to the key pressed
+ */
 void keyboard_handler(void) {
-    // get scancode
-    // disable_irq(KEYBOARD_IRQ);
-    uint8_t scancode = inb(KEYBOARD_DATA_PORT);
+    uint8_t scancode = inb(KEYBOARD_DATA_PORT);     /* get scancode */
     // check if scancode is valid
     // if (scancode > 0x3A) {
     //     // invalid scancode
@@ -165,12 +175,9 @@ void keyboard_handler(void) {
     // }
     // valid scancode
     // for shift just add the offset for the array
-    // convert scancode to char
-    if (scancode <= 59) {
-        char c = scancodes[scancode];
-        putc(c);
+    if (scancode <= sizeof(scancodes)) {    /* check if scancode is valid */
+        char c = scancodes[scancode];       /* get char from scancode */
+        putc(c);                            /* print char */
     }
-    // send EOI
-    // enable_irq(KEYBOARD_IRQ);
-    send_eoi(KEYBOARD_IRQ);
+    send_eoi(KEYBOARD_IRQ);                 /* send EOI */
 }

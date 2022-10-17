@@ -1,8 +1,9 @@
-# handler_wrapper.S - wrapper for handler functions
+# handler_wrapper.S - common assembly linkage wrapper for handler functions
 # vim:ts=4 noexpandtab
 
 #define ASM     1
 
+# wrapper for keyboard interrupt handler
 .globl keyboard_handler_wrapper
 .align 4
 keyboard_handler_wrapper:
@@ -13,6 +14,7 @@ keyboard_handler_wrapper:
     popal
     iret
 
+# wrapper for rtc interrupt handler
 .globl rtc_handler_wrapper
 .align 4
 rtc_handler_wrapper:
