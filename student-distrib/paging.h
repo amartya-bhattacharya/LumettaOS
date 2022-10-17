@@ -100,7 +100,7 @@ void spawnDir();
 void spawnTbl(union tblEntry tab[1024]);
 
 //this function makes the default page directory setup for 3.1
-void setup();
+void setupPg();
 
 //edits a 4MiB page of the page directory
 //this way you can set up further pages whenever you want
