@@ -29,6 +29,9 @@ void pageEnable()
 	return;
 }
 
+/*
+ * Clears the directory
+ */
 void spawnDir()
 {
 	int i;
@@ -39,6 +42,9 @@ void spawnDir()
 	return;
 }
 
+/*
+ * Clears given table
+ */
 void spawnTbl(union tblEntry tab[1024])
 {
 	int i;
@@ -71,5 +77,16 @@ void setup()
 	pageDir[0] = vidTable;
 	pageDir[1] = kernel;
 	pageEnable();
+	return;
+}
+
+/*
+ * Changes one entry of the pageDir
+ * This allows any kernel program to set up their own pages for their own program,
+ * or for a user program that it will call
+ */
+void chgDir(uint32_t idx, union dirEntry e)
+{
+	pageDir[idx] = e;
 	return;
 }
