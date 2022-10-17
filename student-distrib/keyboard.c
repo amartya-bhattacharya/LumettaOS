@@ -170,4 +170,5 @@ void keyboard_handler(void) {
     putc(c);
     // send EOI
     send_eoi(KEYBOARD_IRQ);
+    
 }
