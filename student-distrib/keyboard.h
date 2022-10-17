@@ -15,8 +15,11 @@
 
 /* Externally-visible functions */
 
+/* Initialize the keyboard */
 extern void keyboard_init(void);
+/* Enable (unmask) the keyboard IRQ */
 extern void keyboard_handler(void);
+/* Wrapper function for keyboard_handler */
 extern void keyboard_handler_wrapper();
 
 #endif /* _KEYBOARD_H */

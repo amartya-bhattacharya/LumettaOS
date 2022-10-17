@@ -149,10 +149,7 @@ void entry(unsigned long magic, unsigned long addr) {
     idt_init();
     rtc_init();
     keyboard_init();
-
-    
-	printf("size of unions: %d, %d\n", sizeof(union dirEntry), sizeof(union tblEntry));
-	setupPg();	//set up paging
+    page_init();
     
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
@@ -162,11 +159,10 @@ void entry(unsigned long magic, unsigned long addr) {
     printf("Enabling Interrupts\n");
     sti();
     
-
-#ifdef RUN_TESTS
-    /* Run tests */
-    launch_tests();
-#endif
+    #ifdef RUN_TESTS
+        /* Run tests */
+        launch_tests();
+    #endif
     /* Execute the first program ("shell") ... */
 
     /* Spin (nicely, so we don't chew up cycles) */
