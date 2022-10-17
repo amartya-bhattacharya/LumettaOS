@@ -16,7 +16,7 @@ static union tblEntry table[1024] __attribute__((aligned(4096)));
  */
 void pageEnable()
 {
-	asm(	"movl pageDir, %eax\n\t"
+	asm(	"movl $pageDir, %eax\n\t"
 		"movl %eax, %cr3\n\t");	//move the table pointer to cr3
 
 	asm(	"movl %cr4, %eax\n\t"
@@ -58,7 +58,7 @@ void spawnTbl(union tblEntry tab[1024])
  * maps directly to physical.
  * Accessing anything else will result in a fault.
  */
-void setup()
+void setupPg()
 {
 	int i;
 	union dirEntry vidTable;
@@ -69,7 +69,7 @@ void setup()
 	kernel.whole.p = 1;
 	kernel.whole.rw = 1;
 	kernel.whole.ps = 1;
-	kernel.whole.add_22_31 = 0x400000 >> 22;	//0x400000 is 4mb kernel.val |= 0x400000 also works
+	kernel.whole.add_22_31 = 0x1;	//0x400000 is 4mb kernel.val |= 0x400000 also works
 	//vidPg.val = 0x3;	//sets p and rw bits
 	//vidPg.ent.add = 0xB8000 >> 12;	//bits 31-12 (just 0xB8)
 	spawnTbl(table);

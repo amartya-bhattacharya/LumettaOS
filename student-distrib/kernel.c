@@ -11,6 +11,7 @@
 #include "idt.h"
 #include "keyboard.h"
 #include "rtc.h"
+#include "paging.h"
 
 #define RUN_TESTS
 
@@ -146,10 +147,12 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
     idt_init();
-    //rtc_init();
+    rtc_init();
     keyboard_init();
 
     //clear();
+	printf("size of unions: %d, %d\n", sizeof(union dirEntry), sizeof(union tblEntry));
+	setupPg();	//set up paging
     
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
