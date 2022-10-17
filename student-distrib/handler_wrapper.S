@@ -1,23 +1,22 @@
 # handler_wrapper.S - wrapper for handler functions
 # vim:ts=4 noexpandtab
 
-#include "keyboard.h"
-#include "rtc.h"
+#define ASM     1
 
-.globl handler_wrapper
+.globl keyboard_handler_wrapper
 .align 4
-
 keyboard_handler_wrapper:
-    pushl
+    pushal
     cld /* clear direction flag */
     call keyboard_handler
-    popl
+    popal
     iret
 
+.globl rtc_handler_wrapper
+.align 4
 rtc_handler_wrapper:
-    pushl
+    pushal
     cld /* clear direction flag */
     call rtc_handler
-    popl
+    popal
     iret
-    
