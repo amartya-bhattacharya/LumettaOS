@@ -25,5 +25,6 @@
 /* Externally-visible functions */
 void rtc_init(void);
 void rtc_handler(void);
+void rtc_handler_wrapper();
 
 #endif /* _RTC_H */
