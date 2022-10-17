@@ -1,0 +1,71 @@
+<--------------------------------------------------------->
+                          BUG 1                          
+<--------------------------------------------------------->
+Time:
+    2022.15.22.
+Creator:
+    Sherlock, Natasha
+Description:
+    Segment not present and double fault upon commenting out test cases
+or PIC. 
+Solution:
+    The PIC initialization was incorrect. The PIC mask was moved to the bottom 
+of the initializer. 
+
+<--------------------------------------------------------->
+                          BUG 2                          
+<--------------------------------------------------------->
+Time:
+    2022.15.22.
+Creator:
+    Sherlock, Natasha
+Description:
+    The IDT is bootlooping after writing IDT code.
+Solution:
+    There is an improper assignment the present bit. We added additional conditional statements for 
+    0x80, i<=19, and intel reserved locations.
+
+
+<--------------------------------------------------------->
+                          BUG 3                          
+<--------------------------------------------------------->
+Time:
+    2022.16.22.
+Creator:
+    Sherlock, Natasha
+Description:
+    Printing only one value on the console when typing on the keyboard.
+Solution:
+    We added an x86 header for iret and deleted empty conditional statements 
+    that accidentally had return values.
+
+<--------------------------------------------------------->
+                          BUG 4                          
+<--------------------------------------------------------->
+Time:
+    2022.17.22.
+Creator:
+    Sherlock, Natasha
+Description:
+    The rtc test was not working because it was not in a for
+    loop.
+Solution:
+    while (1){
+        rtc_test();
+        print("rtc test");
+    }
+
+
+<--------------------------------------------------------->
+                          BUG 5                          
+<--------------------------------------------------------->
+Time:
+    2022.18.22.
+Creator:
+    Vasilis, Papanikolaou.
+Description:
+    Page Faulting
+Solution:
+    I was inputting the value of the first element in the
+    struct rather than the address of the struct. I changed 
+    this and the issue was solved.
