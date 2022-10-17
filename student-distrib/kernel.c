@@ -150,7 +150,7 @@ void entry(unsigned long magic, unsigned long addr) {
     rtc_init();
     keyboard_init();
 
-    //clear();
+    
 	printf("size of unions: %d, %d\n", sizeof(union dirEntry), sizeof(union tblEntry));
 	setupPg();	//set up paging
     
@@ -158,13 +158,14 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
+    //clear();
     printf("Enabling Interrupts\n");
     sti();
     
 
 #ifdef RUN_TESTS
     /* Run tests */
-    // launch_tests();
+    launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
 
