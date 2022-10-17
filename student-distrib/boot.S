@@ -56,4 +56,3 @@ keep_going:
 halt:
     hlt
     jmp     halt
-    
