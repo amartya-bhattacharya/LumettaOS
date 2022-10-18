@@ -23,27 +23,11 @@ void rtc_init(void) {
     char prev = inb(RTC_DATA);          /* read the current value of register B */
     outb(RTC_REG_B, RTC_PORT);          /* set the index again (a read will reset the index to register D) */
     outb(prev | 0x40, RTC_DATA);        /* write the previous value ORed with 0x40 */
-    rtc_open();                         /* set the frequency to 2 Hz */
+    // rtc_open(void);                         /* set the frequency to 2 Hz */
 
     enable_irq(RTC_IRQ);                /* enable interrupts */
     rtc_status = 1;                     /* set the status to open */
 }
-
-
-/*
- * rtc_change_freq
- * DESCRIPTION: Changes the frequency of the RTC
- * INPUTS: none
- * OUTPUTS: none
- * RETURN VALUE: none
- * SIDE EFFECTS: Changes the frequency of the RTC to 2 Hz
- */
-void rtc_open(void) {                         /* rate must be above 2 and not over 15 */
-    outb(RTC_REG_A, RTC_PORT);              /* select register A, and disable NMI */
-    char prev = inb(RTC_DATA);              /* read the current value of register A */
-    outb(RTC_REG_A, RTC_PORT);              /* reset index to A */
-    outb((prev & 0xF0) | RTC_BASE_RATE, RTC_DATA);   /* write only our rate to A */
-}   // TODO do I have to disable interrupts for the duration of this function?
 
 
 /*
@@ -54,7 +38,10 @@ void rtc_open(void) {                         /* rate must be above 2 and not ov
  * RETURN VALUE: Wait for an interrupt to occur, then return 0
  * SIDE EFFECTS: Reads data from the RTC
  */
-int rtc_read(void) {
+int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
+    if (buf == NULL) {
+        return -1;                          /* if the buffer is NULL, the call returns -1 */
+    }
     /* wait for the next interrupt */
     while (rtc_status == 0) {
         /* do nothing */
@@ -72,9 +59,13 @@ int rtc_read(void) {
  * RETURN VALUE: none
  * SIDE EFFECTS: Changes the frequency of the RTC
  */
-void rtc_write(int32_t freq) {      // TODO must get its input parameter through a buffer and not read the value directly
+int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes) {      // TODO must get its input parameter through a buffer and not read the value directly
+    if (buf == NULL) {
+        return -1;                          /* if the buffer is NULL, the call returns -1 */
+    }
     int i;
     int rate = 0;
+    int freq = *((int*)buf);    // TODO check if this is the right way to do this
     for (i = 6; i < 15; i++) {              /* parameter check */
         if (freq == (32768 >> (i - 1))) {   
             rate = i;
@@ -82,7 +73,7 @@ void rtc_write(int32_t freq) {      // TODO must get its input parameter through
         }
     }
     if (rate == 0) {        
-        return;
+        return -1;                          /* if the frequency is not valid, the call returns -1 */
     }
 
     rate &= 0x0F;                           /* rate must be above 6 and not over 15 */
@@ -90,8 +81,44 @@ void rtc_write(int32_t freq) {      // TODO must get its input parameter through
     char prev = inb(RTC_DATA);              /* read the current value of register A */
     outb(RTC_REG_A, RTC_PORT);              /* reset index to A */
     outb((prev & 0xF0) | rate, RTC_DATA);   /* write the previous value ORed with 0x40 */
+    return 0;
 }   // TODO do I have to disable interrupts for the duration of this function?
 
+/*
+ * rtc_change_freq
+ * DESCRIPTION: Changes the frequency of the RTC
+ * INPUTS: none
+ * OUTPUTS: none
+ * RETURN VALUE: none
+ * SIDE EFFECTS: Changes the frequency of the RTC to 2 Hz
+ */
+int32_t rtc_open(const uint8_t* filename) {                         /* rate must be above 2 and not over 15 */
+    if (filename == NULL) {    // TODO check descriptors
+        return -1;                          /* if the named file does not exist or no descriptors are free, the call returns -1 */
+    }
+    outb(RTC_REG_A, RTC_PORT);              /* select register A, and disable NMI */
+    char prev = inb(RTC_DATA);              /* read the current value of register A */
+    outb(RTC_REG_A, RTC_PORT);              /* reset index to A */
+    outb((prev & 0xF0) | RTC_BASE_RATE, RTC_DATA);   /* write only our rate to A */
+    return 0;
+}   // TODO do I have to disable interrupts for the duration of this function?
+
+
+/*
+ * rtc_close
+ * DESCRIPTION: Closes the RTC
+ * INPUTS: none
+ * OUTPUTS: none
+ * RETURN VALUE: none
+ * SIDE EFFECTS: Makes RTC available for return from later calls to open
+ */
+int32_t rtc_close(int32_t fd) {
+    if (fd == NULL) {            // You should not allow the user to close the default descriptors (0 for input and 1 for output)  
+        return -1;                          /* trying to close an invalid descriptor returns -1 */
+    }
+    rtc_status = 0;                         /* set the status to closed */
+    return 0;
+}
 
 /*
  * rtc_handler
