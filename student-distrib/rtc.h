@@ -27,12 +27,14 @@
 
 /* Initialize the RTC */
 void rtc_init(void);
-/* Reset the RTC frequency */
-void rtc_open(void);
 /* Read from the RTC */
-int rtc_read(void);
+int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes);
 /* Change the RTC frequency */
-void rtc_write(int rate);
+int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes);
+/* Reset the RTC frequency */
+int32_t rtc_open(const uint8_t* filename);
+/* Close the RTC */
+int32_t rtc_close(int32_t fd);  // TODO do I need this?
 /* RTC interrupt handler */
 void rtc_handler(void);
 /* Wrapper function for RTC handler */

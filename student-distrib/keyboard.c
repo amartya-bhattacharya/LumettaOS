@@ -20,7 +20,7 @@ uint8_t key_status = 0;
 unsigned char keymap[128] =
 {
     0,  27, '1', '2', '3', '4', '5', '6', '7', '8',	/* 0x09 */
-    '9', '0', '-', '=', '\b',	/* Backspace */
+    '9', '0', '-', '=', '\b',	/* Backspace */     // TODO handle backspace
     '\t',			/* Tab */
     'q', 'w', 'e', 'r',	/* 0x10 - 0x13 */
     't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',	/* Enter key */
@@ -61,7 +61,7 @@ unsigned char keymap[128] =
 unsigned char keymap_upper[128] =
 {
     0,  27, '!', '@', '#', '$', '%', '^', '&', '*',	/* 0x09 */
-    '(', ')', '_', '+', '\b',	/* Backspace */
+    '(', ')', '_', '+', '\b',	/* Backspace */     // TODO handle backspace
     '\t',			/* Tab */
     'Q', 'W', 'E', 'R',	/* 0x13 */
     'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n',	/* Enter key */
@@ -111,6 +111,22 @@ void keyboard_init(void) {
     enable_irq(KEYBOARD_IRQ);
 }
 
+
+// reads data from the keyboard
+// returns the number of bytes read
+// In the case of the keyboard, read should return data from one line that has
+// been terminated by pressing Enter, or as much as fits in the buffer from one
+// such line. The line returned should include the line feed character
+// int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
+//     int i;
+//     char* buffer = (char*) buf;
+//     for (i = 0; i < nbytes; i++) {
+//         buffer[i] = getc();
+//     }
+//     return nbytes;
+// }
+
+
 /*
  * keyboard_handler
  * Handles the keyboard interrupt, converts scancode to char and prints to screen
@@ -120,7 +136,7 @@ void keyboard_init(void) {
  * RETURN VALUE: none
  * SIDE EFFECTS: Prints the character corresponding to the key pressed
  */
-void keyboard_handler(void) {
+void keyboard_handler(void) {       // same as terminal_driver?
     uint8_t scancode = inb(KEYBOARD_DATA_PORT);     /* read scancde from keyboard data port */
     // update key_status
     
