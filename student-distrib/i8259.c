@@ -14,11 +14,6 @@ uint8_t slave_mask;  /* IRQs 8-15 */
  * and as part of each devices initialization, unmask the interrupts for that device
  * on the PIC */
 void i8259_init(void) {
-    /* Save the current masks */
-    // uint8_t m1, m2;
-    // m1 = inb(MASTER_8259_PORT + 1);
-    // m2 = inb(SLAVE_8259_PORT + 1);
-
     /* Mask all of the interrupts */
     master_mask = 0xFF;
     slave_mask = 0xFF;
@@ -51,6 +46,10 @@ void i8259_init(void) {
 
 /* Enable (unmask) the specified IRQ */
 void enable_irq(uint32_t irq_num) {
+    if (irq_num < 0 || irq_num > 15) {      /* Check if the IRQ is valid */
+        return;
+    }
+
     uint16_t port;
     uint8_t data;
 
@@ -60,12 +59,17 @@ void enable_irq(uint32_t irq_num) {
         port = SLAVE_8259_PORT + 1;
         irq_num -= 8;
     }
+
     data = inb(port) & ~(1 << irq_num);
     outb(data, port);
 }
 
 /* Disable (mask) the specified IRQ */
 void disable_irq(uint32_t irq_num) {
+    if (irq_num < 0 || irq_num > 15) {      /* Check if the IRQ is valid */
+        return;
+    }
+    
     uint16_t port;
     uint8_t data;
 
@@ -75,12 +79,17 @@ void disable_irq(uint32_t irq_num) {
         port = SLAVE_8259_PORT + 1;
         irq_num -= 8;
     }
+
     data = inb(port) | (1 << irq_num);
     outb(data, port);
 }
 
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
+    if (irq_num < 0 || irq_num > 15) {      /* Check if the IRQ is valid */
+        return;
+    }
+    
     if (irq_num <= 7) {
         outb(EOI | irq_num, MASTER_8259_PORT);
     } else {

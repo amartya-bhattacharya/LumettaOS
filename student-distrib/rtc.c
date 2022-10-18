@@ -36,6 +36,9 @@ void rtc_init(void) {
  * SIDE EFFECTS: Changes the frequency of the RTC
  */
 void rtc_change_freq(int rate) {
+    if (rate < RTC_BASE_RATE || rate > RTC_MAX_RATE) {      /* check if the rate is valid */
+        return;
+    }
     rate &= 0x0F;                           /* rate must be above 2 and not over 15 */
     outb(RTC_REG_A, RTC_PORT);              /* select register A, and disable NMI */
     char prev = inb(RTC_DATA);              /* read the current value of register A */
