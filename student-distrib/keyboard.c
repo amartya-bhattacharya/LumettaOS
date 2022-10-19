@@ -190,24 +190,29 @@ void keyboard_handler(void) {       // same as terminal_driver?
             key_status |= 0x40;
         } else {
             // print the character corresponding to the key pressed
-            if (key_status & 0x10) {
-                // caps lock is on
-                // if scancode is a letter, print the upper case letter
-                // else print the normal character corresponding to the scancode
-                if ((scancode >= 0x10 && scancode <= 0x19) || (scancode >= 0x1E && scancode <= 0x26) || (scancode >= 0x2C && scancode <= 0x32)) {
-                    // print upper case letter
-                    putc(keymap_upper[scancode]);
-                } else {
-                    // print normal character
-                    putc(keymap[scancode]);
-                }
+            // check Ctrl+L
+            if (key_status & 0x04 && scancode == 0x26) {
+                clear();                    // clear screen
             } else {
-                // caps lock is off
-                // if shift is on
-                if (key_status & 0x01) {
-                    putc(keymap_upper[scancode]);
+                if (key_status & 0x10) {
+                    // caps lock is on
+                    // if scancode is a letter, print the upper case letter
+                    // else print the normal character corresponding to the scancode
+                    if ((scancode >= 0x10 && scancode <= 0x19) || (scancode >= 0x1E && scancode <= 0x26) || (scancode >= 0x2C && scancode <= 0x32)) {
+                        // print upper case letter
+                        putc(keymap_upper[scancode]);
+                    } else {
+                        // print normal character
+                        putc(keymap[scancode]);
+                    }
                 } else {
-                    putc(keymap[scancode]);
+                    // caps lock is off
+                    // if shift is on
+                    if (key_status & 0x01) {
+                        putc(keymap_upper[scancode]);
+                    } else {
+                        putc(keymap[scancode]);
+                    }
                 }
             }
         }
