@@ -36,7 +36,7 @@ void rtc_init(void) {
  * INPUTS: none
  * OUTPUTS: none
  * RETURN VALUE: Wait for an interrupt to occur, then return 0
- * SIDE EFFECTS: Reads data from the RTC
+ * SIDE EFFECTS: Blocks until an interrupt occurs
  */
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
     if (buf == NULL) {
@@ -112,7 +112,7 @@ int32_t rtc_open(const uint8_t* filename) {                         /* rate must
  * RETURN VALUE: none
  * SIDE EFFECTS: Makes RTC available for return from later calls to open
  */
-int32_t rtc_close(int32_t fd) {
+int32_t rtc_close(int32_t fd) {  // TODO useless until virtualization
     if (fd == NULL) {            // You should not allow the user to close the default descriptors (0 for input and 1 for output)  
         return -1;                          /* trying to close an invalid descriptor returns -1 */
     }
