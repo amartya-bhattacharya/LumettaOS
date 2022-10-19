@@ -9,6 +9,8 @@
 
 
 /* Local variables */
+// keyboard buffer: 128 bytes
+void* keyboard_buffer[128];
 uint8_t key_status = 0;
 // +-------+------+--------+-----+-----+------+------+-------+
 // |   7   |   6  |   5    |  6  |  3  |  2   |  1   |   0   |
@@ -138,8 +140,8 @@ void keyboard_init(void) {
  */
 void keyboard_handler(void) {       // same as terminal_driver?
     uint8_t scancode = inb(KEYBOARD_DATA_PORT);     /* read scancde from keyboard data port */
-    // update key_status
     
+    // update key_status
     if (scancode & 0x80) {
         // key released
         // handle key up event, check that shift, ctrl, alt, caps lock, num lock, scroll lock are not pressed anymore
@@ -153,15 +155,6 @@ void keyboard_handler(void) {       // same as terminal_driver?
         } else if (scancode == 0xB8) {
             // alt released
             key_status &= ~0x08;
-        } else if (scancode == 0xBA) {
-            // caps lock released
-            key_status &= ~0x10;
-        } else if (scancode == 0xC5) {
-            // num lock released
-            key_status &= ~0x20;
-        } else if (scancode == 0xC6) {
-            // scroll lock released
-            key_status &= ~0x40;
         }
     } else {
         // key pressed
@@ -173,37 +166,61 @@ void keyboard_handler(void) {       // same as terminal_driver?
         if (scancode == 0x2A || scancode == 0x36) {
             // left or right shift pressed
             key_status |= 0x01;
+        } else if (scancode == 0x3A) {
+            // caps lock pressed
+            if (key_status & 0x02) {
+                key_status &= ~0x02;
+            } else {
+                key_status |= 0x02;
+            }
         } else if (scancode == 0x1D) {
             // ctrl pressed
             key_status |= 0x04;
         } else if (scancode == 0x38) {
             // alt pressed
             key_status |= 0x08;
-        } else if (scancode == 0x3A) {
-            // caps lock pressed
-            key_status |= 0x10;
         } else if (scancode == 0x45) {
             // num lock pressed
-            key_status |= 0x20;
+            if (key_status & 0x10) {
+                key_status &= ~0x10;
+            } else {
+                key_status |= 0x10;
+            }
         } else if (scancode == 0x46) {
             // scroll lock pressed
-            key_status |= 0x40;
+            if (key_status & 0x20) {
+                key_status &= ~0x20;
+            } else {
+                key_status |= 0x20;
+            }
         } else {
             // print the character corresponding to the key pressed
             // check Ctrl+L
             if (key_status & 0x04 && scancode == 0x26) {
                 clear();                    // clear screen
             } else {
-                if (key_status & 0x10) {
+                if (key_status & 0x02) {
                     // caps lock is on
+                    // print key status
+                    // printf(key_status);
                     // if scancode is a letter, print the upper case letter
                     // else print the normal character corresponding to the scancode
-                    if ((scancode >= 0x10 && scancode <= 0x19) || (scancode >= 0x1E && scancode <= 0x26) || (scancode >= 0x2C && scancode <= 0x32)) {
+                    if (((scancode >= 0x10 && scancode <= 0x19) || (scancode >= 0x1E && scancode <= 0x26) || (scancode >= 0x2C && scancode <= 0x32))) {
                         // print upper case letter
-                        putc(keymap_upper[scancode]);
+                        // if shift is pressed, print the normal character corresponding to the scancode
+                        if (key_status & 0x01) {
+                            putc(keymap[scancode]);
+                        } else {
+                            putc(keymap_upper[scancode]);
+                        }
                     } else {
                         // print normal character
-                        putc(keymap[scancode]);
+                        // if shift is pressed, print the upper case character corresponding to the scancode
+                        if (key_status & 0x01) {
+                            putc(keymap_upper[scancode]);
+                        } else {
+                            putc(keymap[scancode]);
+                        }
                     }
                 } else {
                     // caps lock is off
