@@ -96,10 +96,10 @@ int buffer_test(){
 	// int result, out, i;
 	// char buffer_test2[128];
 	// for (i=0; i<128; i++){
-	// 	buffer_test2[i]= "h";
+	// buffer_test2[i]= "h";
 	// }
 	// terminal_open(fd);
-	// out = terminal_write(int32_t fd, buffer_test2, 129);
+	// out = terminal_write(int32_t fd, buffer_test2, 129);		//change file
 	// terminal_close(fd);
 	// result= PASS;
 	// if(out != -1){
@@ -110,7 +110,39 @@ int buffer_test(){
 	// return result;
 	return 0;
 }
+int rtc_freq_invalid_test(int freq)
+{
+	// //ensure frequency is limited to 1024
+	// int result, out;
+	// int frequency = freq;
+	// int *buffer_rtc = &frequency;
+	// result = PASS;
+	// out = rtc_write(int32_t fd, buffer_rtc, 4); //change file
+	// if (out != -1){
+	// 	assertion_failure();
+	// 	result = FAIL;
+	// }
+	// return result;
+	return 0;
+}
 
+int change_rtc_freq_test(){
+	// int result, out, j, i;
+	// int frequency = 1026;
+	// int *buffer_rtc = &frequency;
+	// result = PASS;
+	// for (i=6; i<15; i++){
+		// 	*buffer_rtc = 32768 >>  i - 1;
+		// 	out = rtc_write(int32_t fd, buffer_rtc, 4); //change file
+		// 	if (out != -1){
+		// 		for (j=0; j<5; j++){
+		// 		printf("rate = %d", i);
+		// 		}
+		// 	}
+	// }
+	// return result;
+	return 0;
+}
 
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -123,4 +155,11 @@ void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
 	TEST_OUTPUT("divide by zero", idt_test_div_by_zero());
 	//TEST_OUTPUT("buffer overflow", buffer_test());
+	//TEST_OUTPUT("invalid frequency", rtc_freq_invalid_test(32768));
+	//TEST_OUTPUT("invalid frequency", rtc_freq_invalid_test(16384));
+	//TEST_OUTPUT("invalid frequency", rtc_freq_invalid_test(8192));
+	//TEST_OUTPUT("invalid frequency", rtc_freq_invalid_test(4096));
+	//TEST_OUTPUT("invalid frequency", rtc_freq_invalid_test(2048));
+	//TEST_OUTPUT("change rtc frequency", change_rtc_freq_test());
+
 }
