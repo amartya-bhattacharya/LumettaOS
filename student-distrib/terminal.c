@@ -17,6 +17,9 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     // read from keyboard buffer to buf until a newline '\n' or as much as fits in the buffer
     // if the buffer is full, return -1
 	int i;
+    if (buf == NULL) {
+        return -1;
+    }
     for (i = 0; i < 128; i++) {
         if ((char) keyboard_buffer[i] == '\n') {
             break;
@@ -26,8 +29,10 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     }
     // add newline character to the end of the buffer
     *((char*)buf + i + 1) = '\n';
+    // do I have to clear keyboard buffer?
     return i + 1;
 }
+
 
 // writes nbytes of data from buf to the screen
 // returns the number of bytes written
@@ -45,11 +50,13 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
     }
 }
 
+
 // initializes the terminal
 int32_t terminal_open(const uint8_t* filename) {
     clear_term();
     return 0;
 }
+
 
 // clears any terminal-specific data
 int32_t terminal_close(int32_t fd) {
