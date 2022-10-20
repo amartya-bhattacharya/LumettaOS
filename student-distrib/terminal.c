@@ -14,15 +14,19 @@
 // handle buffer overflow (more than 127 characters)
 // handle situations where the buffer is not full but the enter key is pressed
 int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
-    // read from keyboard buffer to buf until a newline '\n'
+    // read from keyboard buffer to buf until a newline '\n' or as much as fits in the buffer
     // if the buffer is full, return -1
 	int i;
     for (i = 0; i < 128; i++) {
-        if (((char*)buf)[i] == '\n') {
-            return i;
+        if ((char) keyboard_buffer[i] == '\n') {
+            break;
         }
+        // copy from keyboard buffer to buf
+        *((char*)buf + i) = keyboard_buffer[i];
     }
-    return 0;
+    // add newline character to the end of the buffer
+    *((char*)buf + i + 1) = '\n';
+    return i + 1;
 }
 
 // writes nbytes of data from buf to the screen
@@ -35,7 +39,7 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
         return -1;
     } else {
         for (i = 0; i < nbytes; i++) {
-            putc(((char*)buf)[i]);
+            putc_term(((char*)buf)[i]);
         }
         return nbytes;
     }
@@ -43,7 +47,7 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
 
 // initializes the terminal
 int32_t terminal_open(const uint8_t* filename) {
-    clear();
+    clear_term();
     return 0;
 }
 
