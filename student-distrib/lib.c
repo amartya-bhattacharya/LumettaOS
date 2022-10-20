@@ -475,3 +475,12 @@ void test_interrupts(void) {
         video_mem[i << 1]++;
     }
 }
+
+/*
+ * Scrolls video memory down a line
+ * Inputs: none; Return: none
+ */
+void scroll()
+{
+		return;
+}
