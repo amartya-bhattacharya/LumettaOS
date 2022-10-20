@@ -9,8 +9,11 @@
 
 
 /* Local variables */
-// keyboard buffer: 128 bytes
-void* keyboard_buffer[128];
+// keyboard buffer
+char keyboard_buffer[KEYBOARD_BUFFER_SIZE];
+// keyboard buffer index
+int keyboard_buffer_index = 0;
+// special key flag
 uint8_t key_status = 0;
 // +-------+------+--------+-----+-----+------+------+-------+
 // |   7   |   6  |   5    |  4  |  3  |  2   |  1   |   0   |
@@ -19,7 +22,7 @@ uint8_t key_status = 0;
 // +----------+---+--------+-----+-----+------+------+-------+
 
 
-unsigned char keymap[128] =
+unsigned char keymap[KEYBOARD_SCANCODE_SIZE] =
 {
     0,  27, '1', '2', '3', '4', '5', '6', '7', '8',	/* 0x09 */
     '9', '0', '-', '=', '\b',	/* Backspace */     // TODO handle backspace
@@ -60,7 +63,7 @@ unsigned char keymap[128] =
 };
 
 
-unsigned char keymap_upper[128] =
+unsigned char keymap_upper[KEYBOARD_SCANCODE_SIZE] =
 {
     0,  27, '!', '@', '#', '$', '%', '^', '&', '*',	/* 0x09 */
     '(', ')', '_', '+', '\b',	/* Backspace */     // TODO handle backspace
@@ -129,6 +132,41 @@ void keyboard_init(void) {
 // }
 
 
+unsigned char handle_standard_key(uint8_t scancode) {
+    if (key_status & 0x02) {
+        // caps lock is on
+        // print key status
+        // printf(key_status);
+        // if scancode is a letter, print the upper case letter
+        // else print the normal character corresponding to the scancode
+        if (((scancode >= 0x10 && scancode <= 0x19) || (scancode >= 0x1E && scancode <= 0x26) || (scancode >= 0x2C && scancode <= 0x32))) {
+            // print upper case letter
+            // if shift is pressed, print the normal character corresponding to the scancode
+            if (key_status & 0x01) {
+                return (keymap[scancode]);
+            } else {
+                return (keymap_upper[scancode]);
+            }
+        } else {
+            // print normal character
+            // if shift is pressed, print the upper case character corresponding to the scancode
+            if (key_status & 0x01) {
+                return (keymap_upper[scancode]);
+            } else {
+                return (keymap[scancode]);
+            }
+        }
+    } else {
+        // caps lock is off
+        // if shift is on
+        if (key_status & 0x01) {
+            return (keymap_upper[scancode]);
+        } else {
+            return (keymap[scancode]);
+        }
+    }
+}
+
 /*
  * keyboard_handler
  * Handles the keyboard interrupt, converts scancode to char and prints to screen
@@ -138,7 +176,7 @@ void keyboard_init(void) {
  * RETURN VALUE: none
  * SIDE EFFECTS: Prints the character corresponding to the key pressed
  */
-void keyboard_handler(void) {       // same as terminal_driver?
+void keyboard_handler(void) {
     uint8_t scancode = inb(KEYBOARD_DATA_PORT);     /* read scancde from keyboard data port */
     
     // update key_status
@@ -199,37 +237,13 @@ void keyboard_handler(void) {       // same as terminal_driver?
             if (key_status & 0x04 && scancode == 0x26) {
                 clear_term();                    // clear screen
             } else {
-                if (key_status & 0x02) {
-                    // caps lock is on
-                    // print key status
-                    // printf(key_status);
-                    // if scancode is a letter, print the upper case letter
-                    // else print the normal character corresponding to the scancode
-                    if (((scancode >= 0x10 && scancode <= 0x19) || (scancode >= 0x1E && scancode <= 0x26) || (scancode >= 0x2C && scancode <= 0x32))) {
-                        // print upper case letter
-                        // if shift is pressed, print the normal character corresponding to the scancode
-                        if (key_status & 0x01) {
-                            putc_term(keymap[scancode]);
-                        } else {
-                            putc_term(keymap_upper[scancode]);
-                        }
-                    } else {
-                        // print normal character
-                        // if shift is pressed, print the upper case character corresponding to the scancode
-                        if (key_status & 0x01) {
-                            putc_term(keymap_upper[scancode]);
-                        } else {
-                            putc_term(keymap[scancode]);
-                        }
-                    }
-                } else {
-                    // caps lock is off
-                    // if shift is on
-                    if (key_status & 0x01) {
-                        putc_term(keymap_upper[scancode]);
-                    } else {
-                        putc_term(keymap[scancode]);
-                    }
+                // write to terminal
+                unsigned char c = handle_standard_key(scancode);
+                putc_term(c);
+                // write to keyboard buffer
+                if (c != 0 && keyboard_buffer_index < KEYBOARD_BUFFER_SIZE) {
+                    keyboard_buffer[keyboard_buffer_index] = c;
+                    keyboard_buffer_index++;
                 }
             }
         }
