@@ -502,7 +502,7 @@ void scroll_term()
 /*
  * void move_cursor(scroll)
  * Description: move the cursor to the specified position
- * Inputs: x, y -- the position to move the cursor to
+ * Inputs: none
  * Return Value: none
  * Side Effects: moves the cursor
  */
