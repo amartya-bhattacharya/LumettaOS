@@ -504,3 +504,21 @@ void scroll()
     }
 		return;
 }
+
+
+void backspace_pressed()
+{   
+    if(screen_x == 0){
+        if(screen_y != 0){
+            screen_x = NUM_COLS - 1;
+            screen_y--;
+        }
+    }
+    else{
+        screen_x--;
+    }
+    *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
+    
+    return;
+}
+
