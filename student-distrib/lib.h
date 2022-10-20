@@ -155,14 +155,16 @@ do {                                    \
 
 void test_interrupts(void);
 
-void scroll_term(void);
+extern void scroll_term(void);
 
-void move_cursor(void);
+extern void move_cursor(void);
 
-void clear_term(void);
+extern void clear_term(void);
 
-void backspace_pressed(void);
+extern void backspace_pressed(void);
 
-void putc_term(uint8_t c);
+extern void putc_term(unsigned char c);
+
+extern void puts_term(unsigned char *s);
 
 #endif /* _LIB_H */

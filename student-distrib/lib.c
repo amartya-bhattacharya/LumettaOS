@@ -557,7 +557,7 @@ void backspace_pressed(void)
  * Inputs: uint_8* c = character to print
  * Return Value: void
  *  Function: Output a character to the console */
-void putc_term(uint8_t c) {
+void putc_term(unsigned char c) {
     // handle backspace
     if (c == '\b') {
         backspace_pressed();
@@ -587,4 +587,23 @@ void putc_term(uint8_t c) {
 		scroll_term();
         screen_y = NUM_ROWS - 1;
 	}
+}
+
+
+/* void puts_term(unsigned char *s)
+ * Description: prints a string to the screen
+ * Inputs: unsigned char *s = string to print
+ * Return Value: none
+ * Side Effects: prints string to screen
+ */
+void puts_term(unsigned char *s) {
+    while (*s != '\0') {
+        putc_term(*s);
+        s++;
+    }
+}
+
+
+void term_init(void) {      // might be unnecessary
+    clear_term();
 }
