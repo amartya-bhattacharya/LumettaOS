@@ -157,4 +157,6 @@ void test_interrupts(void);
 
 void scroll();
 
+void backspace_pressed();
+
 #endif /* _LIB_H */
