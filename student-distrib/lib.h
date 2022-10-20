@@ -155,4 +155,6 @@ do {                                    \
 
 void test_interrupts(void);
 
+void scroll();
+
 #endif /* _LIB_H */
