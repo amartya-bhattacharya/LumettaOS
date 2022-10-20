@@ -16,7 +16,8 @@
 int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     // read from keyboard buffer to buf until a newline '\n'
     // if the buffer is full, return -1
-    for (int i = 0; i < 128; i++) {
+	int i;
+    for (i = 0; i < 128; i++) {
         if (((char*)buf)[i] == '\n') {
             return i;
         }
@@ -29,10 +30,11 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
 int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
     // write to screen
     // return number of bytes written
+	int i;
     if (nbytes < 0 || nbytes > 128) {
         return -1;
     } else {
-        for (int i = 0; i < nbytes; i++) {
+        for (i = 0; i < nbytes; i++) {
             putc(((char*)buf)[i]);
         }
         return nbytes;
