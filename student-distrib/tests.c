@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "paging.h"
+#include "terminal.h"
 
 #define PASS 1
 #define FAIL 0
@@ -89,6 +90,28 @@ int page_fault() {
 
 
 /* Checkpoint 2 tests */
+int buffer_test(){
+	//check if buffer overflow is handled
+	// TEST_HEADER;
+	// int result, out, i;
+	// char buffer_test2[128];
+	// for (i=0; i<128; i++){
+	// 	buffer_test2[i]= "h";
+	// }
+	// terminal_open(fd);
+	// out = terminal_write(int32_t fd, buffer_test2, 129);
+	// terminal_close(fd);
+	// result= PASS;
+	// if(out != -1){
+	// 	assertion_failure();
+	// 	result == FAIL;
+	// }
+
+	// return result;
+
+}
+
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -99,4 +122,5 @@ void launch_tests(){
 	TEST_OUTPUT("page fault", page_fault());
 	TEST_OUTPUT("idt_test", idt_test());
 	TEST_OUTPUT("divide by zero", idt_test_div_by_zero());
+	//TEST_OUTPUT("buffer overflow", buffer_test());
 }
