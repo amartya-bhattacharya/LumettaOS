@@ -1,5 +1,5 @@
 /* lib.c - Some basic library functions (printf, strlen, etc.)
- * vim:ts=4 noexpandtab
+ * vim:ts=4 noexpandtab shiftwidth=4
  */
 
 #include "lib.h"
@@ -176,9 +176,22 @@ void putc(uint8_t c) {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
+		if(screen_x >= NUM_COLS)
+		{
+			if(screen_y == 24)
+				scroll();
+			else
+				screen_y++;
+		}
         screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+		/*else
+			screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;*/
     }
+	if(screen_y == NUM_ROWS)
+	{
+		screen_y = 24;
+		scroll();
+	}
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
