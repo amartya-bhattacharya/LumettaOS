@@ -13,6 +13,15 @@
 /* Keyboard IRQ */
 #define KEYBOARD_IRQ 0x01
 
+/* Keyboard scan code set 1 size */
+#define KEYBOARD_SCANCODE_SIZE 128
+
+/* Keyboard buffer */
+#define KEYBOARD_BUFFER_SIZE 128
+
+/* Externally-visible variables */
+extern char keyboard_buffer[128];
+
 /* Externally-visible functions */
 
 /* Initialize the keyboard */

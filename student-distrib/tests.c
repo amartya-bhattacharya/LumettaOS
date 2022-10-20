@@ -108,7 +108,7 @@ int buffer_test(){
 	// }
 
 	// return result;
-
+	return 0;
 }
 
 
