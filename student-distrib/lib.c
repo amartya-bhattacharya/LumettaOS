@@ -176,22 +176,9 @@ void putc(uint8_t c) {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
-		if(screen_x >= NUM_COLS)
-		{
-			if(screen_y == 24)
-				scroll();
-			else
-				screen_y++;
-		}
         screen_x %= NUM_COLS;
-		/*else
-			screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;*/
+        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
-	if(screen_y == NUM_ROWS)
-	{
-		screen_y = 24;
-		scroll();
-	}
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
@@ -490,35 +477,114 @@ void test_interrupts(void) {
 }
 
 /*
- * Scrolls video memory down a line
- * Inputs: none; Return: none
+ * void scroll(void)
+ * Description: Scrolls video memory down a line
+ * Inputs: none
+ * Return: none
  */
-void scroll()
+void scroll_term()
 {
+    // unsigned blank, temp;
+    // blank = 0x20 | (ATTRIB << 8);
+    // temp = screen_y - NUM_ROWS + 1;
     int32_t i;
     for(i = 0; i < (NUM_ROWS - 1) * NUM_COLS; i++){
         *(uint8_t *)(video_mem + (i << 1)) =  *(uint8_t *)(video_mem + ((i + NUM_COLS) << 1));
-    }
+    }   // can be replaced with memcpy
+    // memcpy(video_mem, video_mem + temp * NUM_COLS, (NUM_ROWS - temp) * NUM_COLS * 2);
     for(;i < NUM_ROWS * NUM_COLS; i++){
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
-    }
-		return;
+    }   // can be replaced with memset
+    // memset(video_mem + (NUM_COLS - temp) * NUM_COLS, blank, NUM_COLS);
 }
 
 
-void backspace_pressed()
+/*
+ * void move_cursor(scroll)
+ * Description: move the cursor to the specified position
+ * Inputs: x, y -- the position to move the cursor to
+ * Return Value: none
+ * Side Effects: moves the cursor
+ */
+void move_cursor(void) {
+    int pos;
+    pos = screen_y * NUM_COLS + screen_x;   /* Row-major indexing */
+    outb(0x0E, 0x3D4);                      /* Set high byte of VGA cursor */
+    outb((pos >> 8) & 0xFF, 0x3D5);         /* Send high byte */
+    outb(0x0F, 0x3D4);                      /* Set low byte of VGA cursor */
+    outb(pos & 0xFF, 0x3D5);                /* Send low byte */
+}
+
+
+/* void clear_screen(void)
+ * Description: clears the screen
+ * Inputs: none
+ * Return Value: none
+ * Side Effects: resets cursor to top left of screen
+ */
+void clear_term(void) {
+    clear();
+    screen_x = 0;
+    screen_y = 0;
+    move_cursor();
+}
+
+
+/*
+ * void backspace_pressed(void)
+ * Description: handles backspace key press
+ * Inputs: none
+ * Return Value: none
+ * Side Effects: moves cursor back one space
+ */
+void backspace_pressed(void)
 {   
-    if(screen_x == 0){
-        if(screen_y != 0){
+    if (screen_x == 0){
+        if (screen_y != 0){
             screen_x = NUM_COLS - 1;
             screen_y--;
         }
     }
-    else{
+    else {
         screen_x--;
     }
     *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
-    
-    return;
+    *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
 }
 
+
+/* void putc(uint8_t c);
+ * Inputs: uint_8* c = character to print
+ * Return Value: void
+ *  Function: Output a character to the console */
+void putc_term(uint8_t c) {
+    // handle backspace
+    if (c == '\b') {
+        backspace_pressed();
+    // handle tab
+    } else if (c == '\t') {
+        screen_x = (screen_x + 4) & ~(4 - 1);
+    } else if (c == '\r') {
+        screen_x = 0;
+    } else if (c == '\n') {
+        screen_y++;
+        screen_x = 0;
+    } else if (c >= ' ') {
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+        screen_x++;
+		if(screen_x >= NUM_COLS)
+		{
+			if(screen_y == 24)
+				scroll_term();
+			else
+				screen_y++;
+		}
+        screen_x %= NUM_COLS;
+    }
+	if (screen_y >= NUM_ROWS)
+	{
+		scroll_term();
+        screen_y = NUM_ROWS - 1;
+	}
+}
