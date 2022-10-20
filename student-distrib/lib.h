@@ -155,8 +155,14 @@ do {                                    \
 
 void test_interrupts(void);
 
-void scroll();
+void scroll_term(void);
 
-void backspace_pressed();
+void move_cursor(void);
+
+void clear_term(void);
+
+void backspace_pressed(void);
+
+void putc_term(uint8_t c);
 
 #endif /* _LIB_H */

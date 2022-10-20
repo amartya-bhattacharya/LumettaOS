@@ -13,7 +13,7 @@
 void* keyboard_buffer[128];
 uint8_t key_status = 0;
 // +-------+------+--------+-----+-----+------+------+-------+
-// |   7   |   6  |   5    |  6  |  3  |  2   |  1   |   0   |
+// |   7   |   6  |   5    |  4  |  3  |  2   |  1   |   0   |
 // +-------+------+--------+-----+-----+------+------+-------+
 // |   reserved   | scroll | num | alt | ctrl | caps | shift |
 // +----------+---+--------+-----+-----+------+------+-------+
@@ -197,7 +197,7 @@ void keyboard_handler(void) {       // same as terminal_driver?
             // print the character corresponding to the key pressed
             // check Ctrl+L
             if (key_status & 0x04 && scancode == 0x26) {
-                clear();                    // clear screen
+                clear_term();                    // clear screen
             } else {
                 if (key_status & 0x02) {
                     // caps lock is on
@@ -209,26 +209,26 @@ void keyboard_handler(void) {       // same as terminal_driver?
                         // print upper case letter
                         // if shift is pressed, print the normal character corresponding to the scancode
                         if (key_status & 0x01) {
-                            putc(keymap[scancode]);
+                            putc_term(keymap[scancode]);
                         } else {
-                            putc(keymap_upper[scancode]);
+                            putc_term(keymap_upper[scancode]);
                         }
                     } else {
                         // print normal character
                         // if shift is pressed, print the upper case character corresponding to the scancode
                         if (key_status & 0x01) {
-                            putc(keymap_upper[scancode]);
+                            putc_term(keymap_upper[scancode]);
                         } else {
-                            putc(keymap[scancode]);
+                            putc_term(keymap[scancode]);
                         }
                     }
                 } else {
                     // caps lock is off
                     // if shift is on
                     if (key_status & 0x01) {
-                        putc(keymap_upper[scancode]);
+                        putc_term(keymap_upper[scancode]);
                     } else {
-                        putc(keymap[scancode]);
+                        putc_term(keymap[scancode]);
                     }
                 }
             }
