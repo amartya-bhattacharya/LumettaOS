@@ -40,7 +40,7 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
     // write to screen
     // return number of bytes written
 	int i;
-    if (nbytes < 0 || nbytes > 128) {
+    if (nbytes <= 0 || nbytes > 128) {
         return -1;
     } else {
         for (i = 0; i < nbytes; i++) {
