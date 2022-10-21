@@ -1,11 +1,12 @@
 /* keyboard.c - Functions to interact with the keyboard
- * vim:ts=4 noexpandtab
+ * vim:ts=4 noexpandtab shiftwidth=4
  */
 
 #include "keyboard.h"
 #include "i8259.h"
 #include "lib.h"
 #include "types.h"
+#include "terminal.h"
 
 
 /* Local variables */
@@ -237,14 +238,31 @@ void keyboard_handler(void) {
             if (key_status & 0x04 && scancode == 0x26) {
                 clear_term();                    // clear screen
             } else {
-                // write to terminal
+                // write to terminal (-1 is because there needs space for \n)
                 unsigned char c = handle_standard_key(scancode);
-                putc_term(c);
+				if((c == '\b' && keyboard_buffer_index != 0) ||
+					(keyboard_buffer_index < KEYBOARD_BUFFER_SIZE - 1 && c != '\b'))
+					putc_term(c);
                 // write to keyboard buffer
-                if (c != 0 && keyboard_buffer_index < KEYBOARD_BUFFER_SIZE) {
+                if (c != 0 && keyboard_buffer_index < KEYBOARD_BUFFER_SIZE - 1 && c != '\b') {
                     keyboard_buffer[keyboard_buffer_index] = c;
                     keyboard_buffer_index++;
                 }
+				else if(keyboard_buffer_index != 0 && c == '\b')
+				{
+					keyboard_buffer_index--;
+				}
+				if(c == '\n')
+				{
+					if(keyboard_buffer_index == KEYBOARD_BUFFER_SIZE - 1)
+					{	//edge case if newline is last char
+						keyboard_buffer[keyboard_buffer_index] = c;
+						keyboard_buffer_index++;
+						putc_term(c);
+					}
+					terminal_write(0, keyboard_buffer, keyboard_buffer_index);
+					keyboard_buffer_index = 0;
+				}
             }
         }
     }

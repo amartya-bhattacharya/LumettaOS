@@ -587,6 +587,7 @@ void putc_term(unsigned char c) {
 		scroll_term();
         screen_y = NUM_ROWS - 1;
 	}
+	move_cursor();
 }
 
 
