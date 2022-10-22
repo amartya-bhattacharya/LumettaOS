@@ -118,21 +118,6 @@ void keyboard_init(void) {
 }
 
 
-// reads data from the keyboard
-// returns the number of bytes read
-// In the case of the keyboard, read should return data from one line that has
-// been terminated by pressing Enter, or as much as fits in the buffer from one
-// such line. The line returned should include the line feed character
-// int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
-//     int i;
-//     char* buffer = (char*) buf;
-//     for (i = 0; i < nbytes; i++) {
-//         buffer[i] = getc();
-//     }
-//     return nbytes;
-// }
-
-
 unsigned char handle_standard_key(uint8_t scancode) {
     if (key_status & 0x02) {
         // caps lock is on
@@ -241,18 +226,28 @@ void keyboard_handler(void) {
                 // write to terminal (-1 is because there needs space for \n)
                 unsigned char c = handle_standard_key(scancode);
 				if((c == '\b' && keyboard_buffer_index != 0) ||
-					(keyboard_buffer_index < KEYBOARD_BUFFER_SIZE - 1 && c != '\b'))
-					putc_term(c);
+					(keyboard_buffer_index < KEYBOARD_BUFFER_SIZE - 1 && c != '\b')) {
+                        // handle tab backspace
+                        if (keyboard_buffer[keyboard_buffer_index - 1] == '\t') {
+                            // backspace tab
+                            // keyboard_buffer[keyboard_buffer_index - 1] = '\0';
+                            keyboard_buffer_index--;
+                            for (int i = 0; i < 4; i++) backspace_pressed();
+                        } else {
+                            // backspace normal character
+                            putc_term(c);
+                        }
+                }
                 // write to keyboard buffer
                 if (c != 0 && keyboard_buffer_index < KEYBOARD_BUFFER_SIZE - 1 && c != '\b') {
                     keyboard_buffer[keyboard_buffer_index] = c;
                     keyboard_buffer_index++;
                 }
-				else if(keyboard_buffer_index != 0 && c == '\b')
+				else if (keyboard_buffer_index != 0 && c == '\b')
 				{
 					keyboard_buffer_index--;
 				}
-				if(c == '\n')
+				if (c == '\n')
 				{
 					if(keyboard_buffer_index == KEYBOARD_BUFFER_SIZE - 1)
 					{	//edge case if newline is last char
@@ -260,7 +255,7 @@ void keyboard_handler(void) {
 						keyboard_buffer_index++;
 						putc_term(c);
 					}
-					terminal_write(0, keyboard_buffer, keyboard_buffer_index);
+					terminal_write(0, keyboard_buffer, keyboard_buffer_index);      // TODO move this into tests.c
 					keyboard_buffer_index = 0;
 				}
             }
