@@ -29,7 +29,6 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     }
     // add newline character to the end of the buffer
     *((char*)buf + i + 1) = '\n';
-    // do I have to clear keyboard buffer?
     return i + 1;
 }
 

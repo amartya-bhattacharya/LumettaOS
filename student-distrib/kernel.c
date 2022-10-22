@@ -58,7 +58,7 @@ void entry(unsigned long magic, unsigned long addr) {
         int i;
         module_t* mod = (module_t*)mbi->mods_addr;
         while (mod_count < mbi->mods_count) {
-            printf("Module %d loaded at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_start);
+            printf("Module %d loaded at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_start);    //pass into filesys init
             printf("Module %d ends at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_end);
             printf("First few bytes of module:\n");
             for (i = 0; i < 16; i++) {
