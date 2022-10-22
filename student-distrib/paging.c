@@ -73,7 +73,7 @@ void page_init()
 	vidTable.val = (unsigned)table | 3;		/* trick from OSdev, sets p and rw bits */
 	kernel.val = 0;
 	kernel.whole.p = 1;
-	kernel.whole.rw = 1;
+	kernel.whole.rw = 0;	//kernel can still write
 	kernel.whole.ps = 1;
 	kernel.whole.add_22_31 = 0x1;	/* 0x400000 is 4mb kernel.val |= 0x400000 also works */
 	//vidPg.val = 0x3;	//sets p and rw bits
