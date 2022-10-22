@@ -538,7 +538,7 @@ void clear_term(void) {
  * Side Effects: moves cursor back one space
  */
 void backspace_pressed(void)
-{   
+{
     if (screen_x == 0){
         if (screen_y != 0){
             screen_x = NUM_COLS - 1;
@@ -563,7 +563,7 @@ void putc_term(unsigned char c) {
         backspace_pressed();
     // handle tab
     } else if (c == '\t') {
-        screen_x = (screen_x + 4) & ~(4 - 1);
+        screen_x = (screen_x + 4); // & ~(4 - 1);
     } else if (c == '\r') {
         screen_x = 0;
     } else if (c == '\n') {
