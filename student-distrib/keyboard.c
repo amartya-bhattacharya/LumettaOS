@@ -163,6 +163,7 @@ unsigned char handle_standard_key(uint8_t scancode) {
  * SIDE EFFECTS: Prints the character corresponding to the key pressed
  */
 void keyboard_handler(void) {
+    int i;
     uint8_t scancode = inb(KEYBOARD_DATA_PORT);     /* read scancde from keyboard data port */
     
     // update key_status
@@ -225,28 +226,27 @@ void keyboard_handler(void) {
             } else {
                 // write to terminal (-1 is because there needs space for \n)
                 unsigned char c = handle_standard_key(scancode);
-				if((c == '\b' && keyboard_buffer_index != 0) ||
-					(keyboard_buffer_index < KEYBOARD_BUFFER_SIZE - 1 && c != '\b')) {
+                if ((c == '\b' && keyboard_buffer_index != 0)) {
+                    if (keyboard_buffer[keyboard_buffer_index - 1] == '\t') {
                         // handle tab backspace
-                        if (keyboard_buffer[keyboard_buffer_index - 1] == '\t') {
-                            // backspace tab
-                            // keyboard_buffer[keyboard_buffer_index - 1] = '\0';
-                            keyboard_buffer_index--;
-                            for (int i = 0; i < 4; i++) backspace_pressed();
-                        } else {
-                            // backspace normal character
-                            putc_term(c);
+                        for (i = 0; i < 4; i++) {
+                            backspace_pressed();
+                            move_cursor();
                         }
+                    } else if (keyboard_buffer_index != 0) {
+                        putc_term(c);
+                    }
+                    keyboard_buffer_index--;
+                }
+                else if (keyboard_buffer_index < KEYBOARD_BUFFER_SIZE - 1 && c != '\b') {
+                    // backspace normal character
+                    putc_term(c);
                 }
                 // write to keyboard buffer
                 if (c != 0 && keyboard_buffer_index < KEYBOARD_BUFFER_SIZE - 1 && c != '\b') {
                     keyboard_buffer[keyboard_buffer_index] = c;
                     keyboard_buffer_index++;
                 }
-				else if (keyboard_buffer_index != 0 && c == '\b')
-				{
-					keyboard_buffer_index--;
-				}
 				if (c == '\n')
 				{
 					if(keyboard_buffer_index == KEYBOARD_BUFFER_SIZE - 1)
