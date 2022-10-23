@@ -7,9 +7,13 @@
 #include "x86_desc.h"
 #include "lib.h"
 
+#define RTC_TEST_EN 0
 /* Local variables */
-uint8_t rtc_status = 0;
-
+volatile uint8_t rtc_status = 0;
+int interrupt_count = 0;
+int i_rtc =15;
+int frequency = 32768 >>  15 - 1;
+int *buffer_rtc = &frequency;
 /*
  * rtc_init
  * DESCRIPTION: Initializes the RTC
@@ -66,7 +70,7 @@ int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes) {      // TODO mu
     int i;
     int rate = 0;
     int freq = *((int*)buf);    // TODO check if this is the right way to do this
-    for (i = 6; i < 15; i++) {              /* parameter check */
+    for (i = 6; i < 16; i++) {              /* parameter check */
         if (freq == (32768 >> (i - 1))) {   
             rate = i;
             break;
@@ -129,7 +133,28 @@ int32_t rtc_close(int32_t fd) {  // TODO useless until virtualization
  * SIDE EFFECTS: Sends an EOI to the RTC
  */
 void rtc_handler(void) {
+    #if (RTC_TEST_EN == 1)
+    int out;
+    int flag;
+    interrupt_count++;
+	if (interrupt_count/(*buffer_rtc) == 4){
+		*buffer_rtc = 32768 >>  i_rtc - 1;
+		out = rtc_write(0, buffer_rtc, 4); //change file
+		interrupt_count = 0;
+        clear();
+        putc_term('\n');
+		if (out == -1){
+			printf("STOPPP: %d", i_rtc);
+            //i_rtc ++;
+            flag=0;
+		}else flag=1;
+        i_rtc --;
+    }
+    if (flag) putc_term('1');
+    #endif
+    rtc_status=1;
     outb(RTC_REG_C, RTC_PORT);              /* select register C */
     inb(RTC_DATA);                          /* just throw away contents */
     send_eoi(RTC_IRQ);                      /* send EOI */
+    
 }
