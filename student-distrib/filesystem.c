@@ -57,8 +57,23 @@ int32_t read_dentry_by_index(uint32_t i, struct dentry* dent)
  */
 int32_t read_data(uint32_t nd, uint32_t off, uint8_t* buf, uint32_t len)
 {
-	if(nd > boot->nent)
+	uint32_t i;
+	struct block* blk;
+	struct inode* nod = (struct inode*)(boot + ((1 + nd) * 4096));	//inode block is 4096 bytes, offset from boot
+	if(nod->len < len + off)	//if asking for more data than available
 		return -1;
+
+	blk = (struct block*)nod->data[off / 4096];
+	for(i = 0;len > 0;len--)
+	{
+		buf[i] = blk->data[off % 4096];
+		i++;
+		off++;
+		if(off % 4096 == 0)
+		{	//I can cut the if statement and set the blk ptr every loop too if it saves time
+			blk = (struct block*)nod->data[off / 4096];
+		}
+	}
 	return 0;
 }
 

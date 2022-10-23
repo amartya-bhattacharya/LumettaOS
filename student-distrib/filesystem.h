@@ -21,6 +21,11 @@ struct inode
 	uint32_t data[1023];
 } __attribute__((packed));
 
+struct block
+{
+	uint32_t data[1024];
+} __attribute__((packed));
+
 struct bootblock
 {
 	uint32_t nent;
