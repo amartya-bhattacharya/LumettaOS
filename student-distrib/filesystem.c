@@ -101,6 +101,25 @@ int32_t dir_open(const uint8_t* fn)
  */
 int32_t dir_read(int32_t fd, void* buf, int32_t n)
 {
+	int32_t i, j, c;
+	struct dentry d;
+	c = 0;
+	for(i = 0;i < boot->nent;i++)
+	{
+		read_dentry_by_index(i, &d);
+		for(j = 0;j < 32;j++)
+		{
+			((uint8_t*)buf)[c] = d.name[j];
+			c++;
+			if(d.name[j] == 0)
+				break;
+		}
+		if(j == 32)		//if name took all 32 chars (no '\0' on end)
+		{
+			((uint8_t*)buf)[c] = 0;
+			c++;
+		}
+	}
 	return 0;
 }
 
@@ -147,6 +166,9 @@ int32_t file_open(const uint8_t* fn)
  */
 int32_t file_read(int32_t fd, void* buf, int32_t n)
 {
+	static uint32_t offset = 0;
+	offset += n;
+	read_data(((uint32_t)file - (uint32_t)boot) / 4096 - 1, offset, (uint8_t*)buf, n);
 	return 0;
 }
 
