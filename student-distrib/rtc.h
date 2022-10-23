@@ -40,4 +40,6 @@ void rtc_handler(void);
 /* Wrapper function for RTC handler */
 void rtc_handler_wrapper();
 
+extern int interrupt_count;
+extern int i_rtc;
 #endif /* _RTC_H */

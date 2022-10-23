@@ -3,6 +3,7 @@
 #include "lib.h"
 #include "paging.h"
 #include "terminal.h"
+#include "rtc.h"
 
 #define PASS 1
 #define FAIL 0
@@ -110,8 +111,13 @@ int buffer_test(){
 	// return result;
 	return 0;
 }
+
+// int terminal_read_test(){
+// 	TEST_HEADER;
+// }
 int rtc_freq_invalid_test(int freq)
-{
+{	
+	// TEST_HEADER;
 	// //ensure frequency is limited to 1024
 	// int result, out;
 	// int frequency = freq;
@@ -126,23 +132,47 @@ int rtc_freq_invalid_test(int freq)
 	return 0;
 }
 
-int change_rtc_freq_test(){
-	// int result, out, j, i;
-	// int frequency = 1026;
-	// int *buffer_rtc = &frequency;
-	// result = PASS;
-	// for (i=6; i<15; i++){
-		// 	*buffer_rtc = 32768 >>  i - 1;
-		// 	out = rtc_write(int32_t fd, buffer_rtc, 4); //change file
-		// 	if (out != -1){
-		// 		for (j=0; j<5; j++){
-		// 		printf("rate = %d", i);
-		// 		}
-		// 	}
-	// }
-	// return result;
-	return 0;
+// int read_file_by_name_test(){
+// 	TEST_HEADER;
+// 	read_dentry_by_name(const uint8_t* fname, struct dentry* dent); //change this
+// 	return PASS;
+// }
+
+// int change_rtc_freq_test(){
+// 	TEST_HEADER;
+// 	int result, out, j, i;
+// 	int frequency = 1024;
+// 	int *buffer_rtc = &frequency;
+// 	result = PASS;
+// 	for (i=6; i<15; i++){
+// 			*buffer_rtc = 32768 >>  i - 1;
+// 			out = rtc_write(0, buffer_rtc, 4); //change file
+// 			if (out != -1){
+// 				for (j=0; j<5; j++){
+// 				printf("rate = %d", i);
+// 				}
+// 			}
+// 	}
+// 	return result;
+// }
+
+int change_rtc_freq_test(int rate){
+	TEST_HEADER;
+	clear();
+	int frequency = 32768 >>  rate - 1;
+	int *buffer_rtc = &frequency;
+	rtc_open(0);
+	rtc_write(0, buffer_rtc, 4);
+	while(1){
+		rtc_read(0, buffer_rtc, 4);
+		putc_term('1');
+	}
+	return PASS;
 }
+
+// int list_all_files_test(){
+
+// }
 
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -151,15 +181,18 @@ int change_rtc_freq_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("page fault", page_fault());
-	TEST_OUTPUT("idt_test", idt_test());
-	TEST_OUTPUT("divide by zero", idt_test_div_by_zero());
+	//TEST_OUTPUT("page fault", page_fault());
+	//TEST_OUTPUT("idt_test", idt_test());
+	//TEST_OUTPUT("divide by zero", idt_test_div_by_zero());
 	//TEST_OUTPUT("buffer overflow", buffer_test());
 	//TEST_OUTPUT("invalid frequency", rtc_freq_invalid_test(32768));
 	//TEST_OUTPUT("invalid frequency", rtc_freq_invalid_test(16384));
 	//TEST_OUTPUT("invalid frequency", rtc_freq_invalid_test(8192));
 	//TEST_OUTPUT("invalid frequency", rtc_freq_invalid_test(4096));
 	//TEST_OUTPUT("invalid frequency", rtc_freq_invalid_test(2048));
-	//TEST_OUTPUT("change rtc frequency", change_rtc_freq_test());
+	//TEST_OUTPUT("read file by name", read_file_by_name_test());
+	//TEST_OUTPUT("list all files", list_all_files_test());
+	//TEST_OUTPUT("change rtc frequency", change_rtc_freq_test(15));
+	TEST_OUTPUT("change rtc frequency", change_rtc_freq_test(2));	
 
 }
