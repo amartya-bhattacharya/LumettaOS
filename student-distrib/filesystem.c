@@ -9,7 +9,7 @@
 static struct bootblock* boot;
 
 //inode number for current file
-static uint32_t file;
+static uint32_t file = 64;	//64 is always out of bounds
 
 //saves amount of bytes already read in a file
 static uint32_t offset;
@@ -115,15 +115,19 @@ int32_t dir_read(int32_t fd, void* buf, int32_t n)
 {
 	int32_t i;
 	struct dentry d;
-	read_dentry_by_index(dnum, &d);
+	if(read_dentry_by_index(dnum, &d))
+		return -1;
 	dnum++;
-	for(i = 0;i < 32;i++)
+	for(i = 0;i < n;i++)
 	{
 		((uint8_t*)buf)[i] = d.name[i];
 		if(d.name[i] == 0)
+		{
+			n = i + 1;
 			break;
+		}
 	}
-	return 0;
+	return n;
 }
 
 /*
@@ -187,7 +191,7 @@ int32_t file_write(int32_t fd, const void* buf, int32_t n)
  */
 int32_t file_close(int32_t fd)
 {
-	file = 0;
+	file = 64;	//sets file to something out of bounds
 	offset = 0;
 	return 0;
 }
