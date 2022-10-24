@@ -11,7 +11,7 @@
 
 struct dentry
 {
-	char name[32];	//if all 32 chars are filled no '\0'
+	uint8_t name[32];	//if all 32 chars are filled no '\0'
 	uint32_t ft;
 	uint32_t ind;
 	uint32_t reserve	: 24;
