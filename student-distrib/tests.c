@@ -113,15 +113,15 @@ int buffer_test(){
 	return 0;
 }
 
-int terminal_read_test(){
-	TEST_HEADER;
-	char* buffer_test3[128];
-	while(1){
-		terminal_read(0, buffer_test3, 128);
-		terminal_write(0, buffer_test3, 128);
-	}
-	return PASS;
-}
+// int terminal_read_test(){
+// 	TEST_HEADER;
+// 	char buffer_test3[128];
+// 	while(1){
+// 		terminal_read(0, buffer_test3, 128);
+// 		terminal_write(0, buffer_test3, 128);
+// 	}
+// 	return PASS;
+// }
 
 int rtc_freq_invalid_test(int freq)
 {	
@@ -140,11 +140,15 @@ int rtc_freq_invalid_test(int freq)
 	return 0;
 }
 
-// int read_file_by_name_test(){
-// 	TEST_HEADER;
-// 	read_dentry_by_name(const uint8_t* fname, struct dentry* dent); //change this
-// 	return PASS;
-// }
+int read_file_by_name_test(){
+	TEST_HEADER;
+	struct dentry dent;
+	read_dentry_by_name("frame0.txt", &dent); //change this
+	inode
+	file_open("frame0.txt");
+	file_read("frame0.txt", void* buf, int32_t n)
+	return PASS;
+}
 
 // int change_rtc_freq_test(){
 // 	TEST_HEADER;
@@ -166,33 +170,31 @@ int rtc_freq_invalid_test(int freq)
 
 int change_rtc_freq_test(int rate){
 	TEST_HEADER;
+	int out;
 	clear();
 	int frequency = 32768 >>  rate - 1;
 	int *buffer_rtc = &frequency;
 	rtc_open(0);
-	rtc_write(0, buffer_rtc, 4);
-	while(1){
-		rtc_read(0, buffer_rtc, 4);
-		putc_term('1');
+	out = rtc_write(0, buffer_rtc, 4);
+	if (out != -1){
+		while(1){
+			rtc_read(0, buffer_rtc, 4);
+			putc_term('1');
+		}
 	}
 	return PASS;
 }
 
 
-// int list_all_files_test(){
-// 	int i;
-// 	char ls_buffer[33];
-// 	memset(ls_buffer, '.', 33*32);
-// 	dir_open(0);
-// 	printf("hi");
-// 	dir_read(0, ls_buffer, 32);
-// 	for(i=0; i<33; i++){
-// 		printf("%c", ls_buffer[i]);
-// 	}
-//  //filename
-// 	printf("bye");
-// 	return PASS;
-// }
+int list_all_files_test(){
+	int i;
+	uint8_t ls_buffer[33*63];
+	dir_open(0);
+	dir_read(0, ls_buffer, 33);
+	for(i=0; i<33*63; i++) putc_term(ls_buffer[i]);
+	
+	return PASS;
+}
 
 
 
@@ -217,6 +219,6 @@ void launch_tests(){
 	//TEST_OUTPUT("list all files", list_all_files_test());
 	//TEST_OUTPUT("change rtc frequency", change_rtc_freq_test(15));
 	//TEST_OUTPUT("change rtc frequency", change_rtc_freq_test(2));	
-	TEST_OUTPUT("terminal test", terminal_read_test());
+	//TEST_OUTPUT("terminal test", terminal_read_test());
 
 }
