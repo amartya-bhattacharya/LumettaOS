@@ -4,6 +4,7 @@
 #include "paging.h"
 #include "terminal.h"
 #include "rtc.h"
+#include "filesystem.h"
 
 #define PASS 1
 #define FAIL 0
@@ -112,9 +113,16 @@ int buffer_test(){
 	return 0;
 }
 
-// int terminal_read_test(){
-// 	TEST_HEADER;
-// }
+int terminal_read_test(){
+	TEST_HEADER;
+	char* buffer_test3[128];
+	while(1){
+		terminal_read(0, buffer_test3, 128);
+		terminal_write(0, buffer_test3, 128);
+	}
+	return PASS;
+}
+
 int rtc_freq_invalid_test(int freq)
 {	
 	// TEST_HEADER;
@@ -170,9 +178,24 @@ int change_rtc_freq_test(int rate){
 	return PASS;
 }
 
-// int list_all_files_test(){
 
+// int list_all_files_test(){
+// 	int i;
+// 	char ls_buffer[33];
+// 	memset(ls_buffer, '.', 33*32);
+// 	dir_open(0);
+// 	printf("hi");
+// 	dir_read(0, ls_buffer, 32);
+// 	for(i=0; i<33; i++){
+// 		printf("%c", ls_buffer[i]);
+// 	}
+//  //filename
+// 	printf("bye");
+// 	return PASS;
 // }
+
+
+
 
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -193,6 +216,7 @@ void launch_tests(){
 	//TEST_OUTPUT("read file by name", read_file_by_name_test());
 	//TEST_OUTPUT("list all files", list_all_files_test());
 	//TEST_OUTPUT("change rtc frequency", change_rtc_freq_test(15));
-	TEST_OUTPUT("change rtc frequency", change_rtc_freq_test(2));	
+	//TEST_OUTPUT("change rtc frequency", change_rtc_freq_test(2));	
+	TEST_OUTPUT("terminal test", terminal_read_test());
 
 }
