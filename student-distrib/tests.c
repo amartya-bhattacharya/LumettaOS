@@ -144,14 +144,21 @@ int read_file_by_name_test(){
 	TEST_HEADER;
 	int i;
 	struct dentry dent;
-	uint8_t buf_file[10]; //264
-	read_dentry_by_name("frame0.txt", &dent); //change this
-	file_open("frame0.txt");
-	file_read(0, buf_file, 10);
+	uint8_t* fn = (uint8_t*)"frame0.txt";
+	uint8_t buf_file[264]; //264
+	read_dentry_by_name(fn, &dent); //change this
+	file_open(fn);
+	file_read(0, buf_file, 264);
 	clear();
-	for (i=0; i<10; i++){
+	for (i=0;i < 264;i++){
 		putc_term(buf_file[i]);
 	}
+	putc_term('\n');
+	for(i = 0;i < 32;i++)
+	{
+		putc_term(dent.name[i]);
+	}
+	putc_term('\n');
 	return PASS;
 }
 
