@@ -112,14 +112,18 @@ int32_t dir_read(int32_t fd, void* buf, int32_t n)
 			((uint8_t*)buf)[c] = d.name[j];
 			c++;
 			if(d.name[j] == 0)
+			{
+				((uint8_t*)buf)[c] = '\n';
 				break;
+			}
 		}
 		if(j == 32)		//if name took all 32 chars (no '\0' on end)
 		{
-			((uint8_t*)buf)[c] = 0;
+			((uint8_t*)buf)[c] = '\n';
 			c++;
 		}
 	}
+	((uint8_t*)buf)[c] = 0;		//sets character after last to 0 to make sure it stops reading
 	return 0;
 }
 
