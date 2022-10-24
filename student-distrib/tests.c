@@ -113,15 +113,15 @@ int buffer_test(){
 	return 0;
 }
 
-// int terminal_read_test(){
-// 	TEST_HEADER;
-// 	char buffer_test3[128];
-// 	while(1){
-// 		terminal_read(0, buffer_test3, 128);
-// 		terminal_write(0, buffer_test3, 128);
-// 	}
-// 	return PASS;
-// }
+int terminal_read_test(){
+	TEST_HEADER;
+	char buffer_test3[128];
+	while(1){
+		terminal_read(0, buffer_test3, 128);
+		terminal_write(0, buffer_test3, 128);
+	}
+	return PASS;
+}
 
 int rtc_freq_invalid_test(int freq)
 {	
@@ -141,38 +141,26 @@ int rtc_freq_invalid_test(int freq)
 }
 
 int read_file_by_name_test(){
-	// TEST_HEADER;
-	// struct dentry dent;
-	// read_dentry_by_name("frame0.txt", &dent); //change this
-	// inode
-	// file_open("frame0.txt");
-	// file_read("frame0.txt", void* buf, int32_t n)
+	TEST_HEADER;
+	int i;
+	struct dentry dent;
+	uint8_t buf_file[10]; //264
+	read_dentry_by_name("frame0.txt", &dent); //change this
+	file_open("frame0.txt");
+	file_read(0, buf_file, 10);
+	clear();
+	for (i=0; i<10; i++){
+		putc_term(buf_file[i]);
+	}
 	return PASS;
 }
 
-// int change_rtc_freq_test(){
-// 	TEST_HEADER;
-// 	int result, out, j, i;
-// 	int frequency = 1024;
-// 	int *buffer_rtc = &frequency;
-// 	result = PASS;
-// 	for (i=6; i<15; i++){
-// 			*buffer_rtc = 32768 >>  i - 1;
-// 			out = rtc_write(0, buffer_rtc, 4); //change file
-// 			if (out != -1){
-// 				for (j=0; j<5; j++){
-// 				printf("rate = %d", i);
-// 				}
-// 			}
-// 	}
-// 	return result;
-// }
 
 int change_rtc_freq_test(int rate){
 	TEST_HEADER;
 	int out;
 	clear();
-	int frequency = 32768 >>  rate - 1;
+	int frequency = 32768 >>  (rate - 1);
 	int *buffer_rtc = &frequency;
 	rtc_open(0);
 	out = rtc_write(0, buffer_rtc, 4);
@@ -185,20 +173,18 @@ int change_rtc_freq_test(int rate){
 	return PASS;
 }
 
-
 int list_all_files_test(){
-	int i;
+	int i,n;
 	uint8_t ls_buffer[32];
-	while(dir_read(0, ls_buffer, 32) != -1){
-		for(i = 0; i < 32; i++){
-			if(ls_buffer[i] == 0){
-				break;
-			}
+	clear();
+	n = dir_read(0, ls_buffer, 32);
+	while(n != -1){
+		for(i = 0; i < n; i++){
 			putc_term(ls_buffer[i]);
 		}
 		putc_term('\n');
+		n = dir_read(0, ls_buffer, 32);
 	}
-	
 	
 	return PASS;
 }
@@ -222,9 +208,9 @@ void launch_tests(){
 	//TEST_OUTPUT("invalid frequency", rtc_freq_invalid_test(8192));
 	//TEST_OUTPUT("invalid frequency", rtc_freq_invalid_test(4096));
 	//TEST_OUTPUT("invalid frequency", rtc_freq_invalid_test(2048));
-	//TEST_OUTPUT("read file by name", read_file_by_name_test());
+	TEST_OUTPUT("read file by name", read_file_by_name_test());
 	//TEST_OUTPUT("list all files", list_all_files_test());
-	//TEST_OUTPUT("change rtc frequency", change_rtc_freq_test(15));
+	//TEST_OUTPUT("change rtc frequency", change_rtc_freq_test(3));
 	//TEST_OUTPUT("change rtc frequency", change_rtc_freq_test(2));	
 	//TEST_OUTPUT("terminal test", terminal_read_test());
 
