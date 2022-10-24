@@ -8,8 +8,14 @@
 //address of bootblock which is also address of start of filesystem
 static struct bootblock* boot;
 
-//address of inode for file, which contains indexes of data blocks
-static struct inode* file;
+//inode number for current file
+static uint32_t file;
+
+//saves amount of bytes already read in a file
+static uint32_t offset;
+
+//saves index of last accessed directory
+static uint32_t dnum;
 
 //static union tblEntry fstable[1024] __attribute__((aligned(4096)));
 
@@ -53,15 +59,20 @@ int32_t read_dentry_by_index(uint32_t i, struct dentry* dent)
 /*
  * Reads length amount of bytes from file inode starting at offset bytes in file
  * Inputs: inode#, offset, buffer, length
- * Outputs: success/failure, changed buffer
+ * Outputs: bytes written, changed buffer
  */
 int32_t read_data(uint32_t nd, uint32_t off, uint8_t* buf, uint32_t len)
 {
 	uint32_t i;
 	struct block* blk;
-	struct inode* nod = (struct inode*)(boot + ((1 + nd) * BLKSIZE));	//inode block is 4096 bytes, offset from boot
-	if(nod->len < len + off)	//if asking for more data than available
+	struct inode* nod;
+	if(nd > boot->nnod)
 		return -1;
+	nod = (struct inode*)((uint32_t)boot + ((1 + nd) * BLKSIZE));	//inode block is 4096 bytes, offset from boot
+	if(nod->len < len + off)	//if asking for more data than available
+	{	//adjusts len to read maximum number of bytes
+		len = nod->len - off;
+	}
 
 	blk = (struct block*)nod->data[off / BLKSIZE];
 	for(i = 0;len > 0;len--)
@@ -74,7 +85,7 @@ int32_t read_data(uint32_t nd, uint32_t off, uint8_t* buf, uint32_t len)
 			blk = (struct block*)nod->data[off / BLKSIZE];
 		}
 	}
-	return 0;
+	return len;
 }
 
 /*
@@ -91,39 +102,27 @@ int32_t dir_open(const uint8_t* fn)
 	fstable[0].p = 1;		//setup boot block
 	chgDir(2, e);			//puts filesystem in the virtual memory space right after kernel*/
 	boot = (struct bootblock*)fn;
+	dnum = 0;
 	return 0;
 }
 
 /*
- * Reads every single file's filename
+ * Reads a filename
  * Inputs: buf
  * Outputs: success, changed buf
  */
 int32_t dir_read(int32_t fd, void* buf, int32_t n)
 {
-	int32_t i, j, c;
+	int32_t i;
 	struct dentry d;
-	c = 0;
-	for(i = 0;i < boot->nent;i++)
+	read_dentry_by_index(dnum, &d);
+	dnum++;
+	for(i = 0;i < 32;i++)
 	{
-		read_dentry_by_index(i, &d);
-		for(j = 0;j < 32;j++)
-		{
-			((uint8_t*)buf)[c] = d.name[j];
-			c++;
-			if(d.name[j] == 0)
-			{
-				((uint8_t*)buf)[c] = '\n';
-				break;
-			}
-		}
-		if(j == 32)		//if name took all 32 chars (no '\0' on end)
-		{
-			((uint8_t*)buf)[c] = '\n';
-			c++;
-		}
+		((uint8_t*)buf)[i] = d.name[i];
+		if(d.name[i] == 0)
+			break;
 	}
-	((uint8_t*)buf)[c] = 0;		//sets character after last to 0 to make sure it stops reading
 	return 0;
 }
 
@@ -137,13 +136,13 @@ int32_t dir_write(int32_t fd, const void* buf, int32_t n)
 
 /*
  * "Closes" the filesystem
- * This means nothing since there is only one filesystem
- * which is closed on exit maybe.
+ * Sets index of last accessed directory to 0
  * Input: address of filesystem (irrelevant with only one)
  * Output: success
  */
 int32_t dir_close(int32_t fd)
 {
+	dnum = 0;
 	return 0;
 }
 
@@ -157,24 +156,21 @@ int32_t file_open(const uint8_t* fn)
 	struct dentry d;
 	if(read_dentry_by_name(fn, &d))
 		return -1;
-	//inode address calculation:
-	//boot address + (inode idx + 1) * 4096 : (4096 is size of inode)
-	file = (struct inode*)((d.ind + 1) * BLKSIZE + (uint32_t)boot);
+	file = d.ind;
+	offset = 0;
 	return 0;
 }
 
 /*
  * Reads n bytes of data from file into buf
  * Inputs: buf, n	(might remove fd since file is loaded in open()?)
- * Outputs: success, changed buf
+ * Outputs: number of bytes read, changed buf
  */
 int32_t file_read(int32_t fd, void* buf, int32_t n)
 {
-	static uint32_t offset = 0;
+	n = read_data(file, offset, (uint8_t*)buf, n);
 	offset += n;
-	if(read_data(((uint32_t)file - (uint32_t)boot) / BLKSIZE - 1, offset, (uint8_t*)buf, n))
-		return -1;
-	return 0;
+	return n;
 }
 
 /*
@@ -191,6 +187,7 @@ int32_t file_write(int32_t fd, const void* buf, int32_t n)
  */
 int32_t file_close(int32_t fd)
 {
-	file = NULL;
+	file = 0;
+	offset = 0;
 	return 0;
 }
