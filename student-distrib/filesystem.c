@@ -3,6 +3,7 @@
  */
 
 #include "filesystem.h"
+#include "lib.h"
 //#include "paging.h"
 
 //address of bootblock which is also address of start of filesystem
@@ -26,18 +27,13 @@ static uint32_t dnum;
  */
 int32_t read_dentry_by_name(const uint8_t* fname, struct dentry* dent)
 {
-	int i, j;
+	int i;
 	for(i = 0;i < boot->nent;i++)	//iterate through dentries
 	{
-		for(j = 0;j < 32;j++)		//iterate through name strings
+		if(strncmp(fname, boot->dirs[i].name, 32) == 0)
 		{
-			if(boot->dirs[i].name[j] != dent->name[j])
-				break;
-			if(boot->dirs[i].name[j] == 0 || j == 31)
-			{
-				*dent = boot->dirs[i];
-				return 0;
-			}
+			*dent = boot->dirs[i];
+			return 0;
 		}
 	}
 	return -1;
@@ -68,7 +64,7 @@ int32_t read_data(uint32_t nd, uint32_t off, uint8_t* buf, uint32_t len)
 	struct inode* nod;
 	if(nd > boot->nnod)
 		return -1;
-	nod = (struct inode*)((uint32_t)boot + ((1 + nd) * BLKSIZE));	//inode block is 4096 bytes, offset from boot
+	nod = (struct inode*)(boot + nd + 1);	//inode block is 4096 bytes, offset from boot
 	if(nod->len < len + off)	//if asking for more data than available
 	{	//adjusts len to read maximum number of bytes
 		len = nod->len - off;

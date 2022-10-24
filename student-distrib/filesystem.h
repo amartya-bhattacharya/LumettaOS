@@ -33,7 +33,7 @@ struct bootblock
 	uint32_t nent;
 	uint32_t nnod;
 	uint32_t nblck;
-	uint32_t res[13];		//first 64 bytes
+	uint8_t res[52];		//first 64 bytes
 	struct dentry dirs[63];	//63 groups of 64 bytes
 } __attribute__((packed));
 
