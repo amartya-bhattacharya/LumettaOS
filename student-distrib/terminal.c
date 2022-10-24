@@ -22,11 +22,13 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     }
     for (i = 0; i < 128; i++) {
         if ((char) keyboard_buffer[i] == '\n') {
+            puts("broke!");
             break;
         }
         // copy from keyboard buffer to buf
         *((char*)buf + i) = keyboard_buffer[i];
     }
+    memset(keyboard_buffer, 0, 128);
     // add newline character to the end of the buffer
     *((char*)buf + i + 1) = '\n';
     return i + 1;
