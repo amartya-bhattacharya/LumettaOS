@@ -30,7 +30,7 @@ int32_t read_dentry_by_name(const uint8_t* fname, struct dentry* dent)
 	int i;
 	for(i = 0;i < boot->nent;i++)	//iterate through dentries
 	{
-		if(strncmp(fname, boot->dirs[i].name, 32) == 0)
+		if(strncmp((int8_t*)fname, (int8_t*)(boot->dirs[i].name), 32) == 0)
 		{
 			*dent = boot->dirs[i];
 			return 0;
@@ -70,7 +70,7 @@ int32_t read_data(uint32_t nd, uint32_t off, uint8_t* buf, uint32_t len)
 		len = nod->len - off;
 	}
 
-	blk = (struct block*)nod->data[off / BLKSIZE];
+	blk = (struct block*)((nod->data)[off / BLKSIZE]);
 	for(i = 0;len > 0;len--)
 	{
 		buf[i] = blk->data[off % BLKSIZE];
