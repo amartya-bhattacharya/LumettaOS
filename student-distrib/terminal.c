@@ -17,20 +17,37 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     // read from keyboard buffer to buf until a newline '\n' or as much as fits in the buffer
     // if the buffer is full, return -1
 	int i;
+    char c = 0;
     if (buf == NULL) {
         return -1;
     }
-    for (i = 0; i < 128; i++) {
+    if (nbytes > 128) nbytes = 128;
+
+    // while(keyboard_buffer[0] == '\0');
+    i = 0;
+
+    while(1) {
+        // for (i = 0; i < nbytes; i++) {
+        //     if ((char) keyboard_buffer[i] == '\n') {
+        //         puts("entered\n");
+        //         break;
+        //     }
+        //     *(((char*)buf) + i) = keyboard_buffer[i];         // copy from keyboard buffer to buf
+        // }
+        c = keyboard_buffer[i];
+        while(c == keyboard_buffer[i]);
+        ((char*)buf)[i] = keyboard_buffer[i];
         if ((char) keyboard_buffer[i] == '\n') {
-            puts("broke!");
+            // puts("entered");
             break;
         }
-        // copy from keyboard buffer to buf
-        *((char*)buf + i) = keyboard_buffer[i];
+        i++;
     }
+    //clear buffer
+    //putc(i + '0');
     memset(keyboard_buffer, 0, 128);
     // add newline character to the end of the buffer
-    *((char*)buf + i + 1) = '\n';
+    // *((char*)buf + i + 1) = '\n';
     return i + 1;
 }
 
@@ -41,6 +58,7 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
     // write to screen
     // return number of bytes written
 	int i;
+    //puts("wrote ");
     if (nbytes <= 0 || nbytes > 128) {
         return -1;
     } else {

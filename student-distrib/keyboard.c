@@ -11,7 +11,7 @@
 
 /* Local variables */
 // keyboard buffer
-char keyboard_buffer[KEYBOARD_BUFFER_SIZE];
+char keyboard_buffer[KEYBOARD_BUFFER_SIZE] = {0};
 // keyboard buffer index
 int keyboard_buffer_index = 0;
 // special key flag
