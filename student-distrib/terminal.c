@@ -25,7 +25,6 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
 
     // while(keyboard_buffer[0] == '\0');
     i = 0;
-
     while(1) {
         // for (i = 0; i < nbytes; i++) {
         //     if ((char) keyboard_buffer[i] == '\n') {
@@ -36,18 +35,22 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
         // }
         c = keyboard_buffer[i];
         while(c == keyboard_buffer[i]);
+        cli();
         ((char*)buf)[i] = keyboard_buffer[i];
         if ((char) keyboard_buffer[i] == '\n') {
             // puts("entered");
+            
             break;
         }
         i++;
+        sti();
     }
     //clear buffer
     //putc(i + '0');
     memset(keyboard_buffer, 0, 128);
     // add newline character to the end of the buffer
     // *((char*)buf + i + 1) = '\n';
+    sti();
     return i + 1;
 }
 
@@ -59,14 +62,18 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
     // return number of bytes written
 	int i;
     //puts("wrote ");
+    cli();
     if (nbytes <= 0 || nbytes > 128) {
+        sti();
         return -1;
     } else {
         for (i = 0; i < nbytes; i++) {
             putc_term(((char*)buf)[i]);
         }
+        sti();
         return nbytes;
     }
+    
 }
 
 
