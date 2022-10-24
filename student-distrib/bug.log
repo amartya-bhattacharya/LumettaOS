@@ -94,3 +94,39 @@ Description:
 Solution:
     change to 24 bytes instead of 24 bits in the struct
 
+<--------------------------------------------------------->
+                          BUG 8                          
+<--------------------------------------------------------->
+Time:
+    2022.10.24.
+Creator:
+    Vasilis, Papanikolaou
+Description:
+    not reading the file correctly.
+Solution:
+    data block is an index not a direct pointer
+
+<--------------------------------------------------------->
+                          BUG 9                          
+<--------------------------------------------------------->
+Time:
+    2022.10.24.
+Creator:
+    Vasilis, Papanikolaou
+Description:
+    Filesystem read is printing garbage at the end.
+Solution:
+    The buffer was larger than the data put in it. I had to make
+    sure it only printed the data given to it in the test.
+
+<--------------------------------------------------------->
+                          BUG 10                          
+<--------------------------------------------------------->
+Time:
+    2022.10.?24.
+Creator:
+    Amartya
+Description:
+    
+Solution:
+    ....
