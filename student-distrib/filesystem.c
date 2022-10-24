@@ -62,7 +62,7 @@ int32_t read_data(uint32_t nd, uint32_t off, uint8_t* buf, uint32_t len)
 	uint32_t i;
 	struct block* blk;
 	struct inode* nod;
-	if(nd > boot->nnod)
+	if(nd >= boot->nnod)
 		return -1;
 	nod = (struct inode*)(boot + nd + 1);	//inode block is 4096 bytes, offset from boot
 	if(nod->len < len + off)	//if asking for more data than available
@@ -70,15 +70,16 @@ int32_t read_data(uint32_t nd, uint32_t off, uint8_t* buf, uint32_t len)
 		len = nod->len - off;
 	}
 
-	blk = (struct block*)((nod->data)[off / BLKSIZE]);
-	for(i = 0;len > 0;len--)
+	//ptr calculation: since boot is of size 4096 bytes if I add 1 to it it adds 4096 bytes to the address,
+	//therefore I can just add the number of blocks
+	blk = (struct block*)(boot + boot->nnod + 1 + nod->data[off / BLKSIZE]);
+	for(i = 0;len - i > 0;i++)
 	{
 		buf[i] = blk->data[off % BLKSIZE];
-		i++;
 		off++;
 		if(off % BLKSIZE == 0)
 		{	//I can cut the if statement and set the blk ptr every loop too if it saves time
-			blk = (struct block*)nod->data[off / BLKSIZE];
+			blk = (struct block*)(boot + boot->nnod + 1 + nod->data[off / BLKSIZE]);
 		}
 	}
 	return len;

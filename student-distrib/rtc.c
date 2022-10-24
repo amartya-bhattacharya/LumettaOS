@@ -12,7 +12,7 @@
 volatile uint8_t rtc_status = 0;
 int interrupt_count = 0;
 int i_rtc =15;
-int frequency = 32768 >>  15 - 1;
+int frequency = 32768 >> (15 - 1);
 int *buffer_rtc = &frequency;
 /*
  * rtc_init

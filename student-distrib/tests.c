@@ -142,15 +142,15 @@ int rtc_freq_invalid_test(int freq)
 
 int read_file_by_name_test(){
 	TEST_HEADER;
-	int i;
+	int i, c;
 	struct dentry dent;
 	uint8_t* fn = (uint8_t*)"frame0.txt";
 	uint8_t buf_file[264]; //264
 	read_dentry_by_name(fn, &dent); //change this
 	file_open(fn);
-	file_read(0, buf_file, 264);
+	c = file_read(0, buf_file, 264);
 	clear();
-	for (i=0;i < 264;i++){
+	for (i=0;i < c;i++){
 		putc_term(buf_file[i]);
 	}
 	putc_term('\n');
