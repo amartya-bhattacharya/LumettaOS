@@ -30,7 +30,7 @@ int32_t read_dentry_by_name(const uint8_t* fname, struct dentry* dent)
 	int i;
 	for(i = 0;i < boot->nent;i++)	//iterate through dentries
 	{
-		if(strncmp((int8_t*)fname, (int8_t*)(boot->dirs[i].name), 32) == 0)
+		if(strncmp((int8_t*)fname, (int8_t*)(boot->dirs[i].name), 32) == 0)	//maximum size of a filename 
 		{
 			*dent = boot->dirs[i];
 			return 0;

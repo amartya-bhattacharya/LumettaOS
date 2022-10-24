@@ -11,9 +11,8 @@
 /* Local variables */
 volatile uint8_t rtc_status = 0;
 int interrupt_count = 0;
-int i_rtc =15;
-int frequency = 32768 >> (15 - 1);
-int *buffer_rtc = &frequency;
+int i_rtc =15; //rate is 15 for test
+int frequency = 32768 >> (15 - 1);  //rate is 15 for test, maximum theoretical frequency is bit-shifted number
 /*
  * rtc_init
  * DESCRIPTION: Initializes the RTC
@@ -71,7 +70,7 @@ int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes) {      // TODO mu
     int rate = 0;
     int freq = *((int*)buf);    // TODO check if this is the right way to do this
     for (i = 6; i < 16; i++) {              /* parameter check */
-        if (freq == (32768 >> (i - 1))) {   
+        if (freq == (32768 >> (i - 1))) {   //maximum frequency theoretically
             rate = i;
             break;
         }
