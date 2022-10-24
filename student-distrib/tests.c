@@ -141,12 +141,12 @@ int rtc_freq_invalid_test(int freq)
 }
 
 int read_file_by_name_test(){
-	TEST_HEADER;
-	struct dentry dent;
-	read_dentry_by_name("frame0.txt", &dent); //change this
-	inode
-	file_open("frame0.txt");
-	file_read("frame0.txt", void* buf, int32_t n)
+	// TEST_HEADER;
+	// struct dentry dent;
+	// read_dentry_by_name("frame0.txt", &dent); //change this
+	// inode
+	// file_open("frame0.txt");
+	// file_read("frame0.txt", void* buf, int32_t n)
 	return PASS;
 }
 
@@ -188,10 +188,17 @@ int change_rtc_freq_test(int rate){
 
 int list_all_files_test(){
 	int i;
-	uint8_t ls_buffer[33*63];
-	dir_open(0);
-	dir_read(0, ls_buffer, 33);
-	for(i=0; i<33*63; i++) putc_term(ls_buffer[i]);
+	uint8_t ls_buffer[32];
+	while(dir_read(0, ls_buffer, 32) != -1){
+		for(i = 0; i < 32; i++){
+			if(ls_buffer[i] == 0){
+				break;
+			}
+			putc_term(ls_buffer[i]);
+		}
+		putc_term('\n');
+	}
+	
 	
 	return PASS;
 }
