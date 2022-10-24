@@ -7,6 +7,8 @@
 
 #include "types.h"
 
+#define BLKSIZE 4096
+
 struct dentry
 {
 	char name[32];	//if all 32 chars are filled no '\0'
@@ -18,12 +20,12 @@ struct dentry
 struct inode
 {
 	uint32_t len;
-	uint32_t data[1023];
+	uint32_t data[1023];	//total size 1024 longs, len is 1 long
 } __attribute__((packed));
 
 struct block
 {
-	uint32_t data[1024];
+	uint8_t data[BLKSIZE];
 } __attribute__((packed));
 
 struct bootblock
