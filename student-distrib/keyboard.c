@@ -255,7 +255,7 @@ void keyboard_handler(void) {
 						keyboard_buffer_index++;
 						putc_term(c);
 					}
-					terminal_write(0, keyboard_buffer, keyboard_buffer_index);      // TODO move this into tests.c
+					// terminal_write(0, keyboard_buffer, keyboard_buffer_index);      // TODO move this into tests.c
 					keyboard_buffer_index = 0;
 				}
             }

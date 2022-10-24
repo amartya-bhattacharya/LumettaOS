@@ -94,61 +94,62 @@ int page_fault() {
 /* Checkpoint 2 tests */
 int buffer_test(){
 	//check if buffer overflow is handled
-	// TEST_HEADER;
-	// int result, out, i;
-	// char buffer_test2[128];
-	// for (i=0; i<128; i++){
-	// buffer_test2[i]= "h";
-	// }
-	// terminal_open(fd);
-	// out = terminal_write(int32_t fd, buffer_test2, 129);		//change file
-	// terminal_close(fd);
-	// result= PASS;
-	// if(out != -1){
-	// 	assertion_failure();
-	// 	result == FAIL;
-	// }
+	TEST_HEADER;
+	int result, out, i;
+	char* buffer_test2[128];
+	for (i=0; i<128; i++){
+		buffer_test2[i]= "h";
+	}
+	terminal_open(0);
+	out = terminal_write(0, buffer_test2, 130);		//change file
+	terminal_close(0);
+	result= PASS;
+	if(out != -1){
+		assertion_failure();
+		result = FAIL;
+	}
 
-	// return result;
-	return 0;
+	return result;
 }
 
 int terminal_read_test(){
 	TEST_HEADER;
 	char buffer_test3[128];
+	terminal_open(0);
 	while(1){
 		terminal_read(0, buffer_test3, 128);
 		terminal_write(0, buffer_test3, 128);
 	}
+	terminal_close(0);
 	return PASS;
 }
 
 int rtc_freq_invalid_test(int freq)
 {	
-	// TEST_HEADER;
-	// //ensure frequency is limited to 1024
-	// int result, out;
-	// int frequency = freq;
-	// int *buffer_rtc = &frequency;
-	// result = PASS;
-	// out = rtc_write(int32_t fd, buffer_rtc, 4); //change file
-	// if (out != -1){
-	// 	assertion_failure();
-	// 	result = FAIL;
-	// }
-	// return result;
-	return 0;
+	TEST_HEADER;
+	//ensure frequency is limited to 1024
+	int result, out;
+	int frequency = freq;
+	int *buffer_rtc = &frequency;
+	result = PASS;
+	out = rtc_write(0, buffer_rtc, 4); //change file
+	if (out != -1){
+		assertion_failure();
+		result = FAIL;
+	}
+	return result;
 }
+
 
 int read_file_by_name_test(){
 	TEST_HEADER;
 	int i, c;
 	struct dentry dent;
 	uint8_t* fn = (uint8_t*)"frame0.txt";
-	uint8_t buf_file[264]; //264
+	uint8_t buf_file[284]; //264
 	read_dentry_by_name(fn, &dent); //change this
 	file_open(fn);
-	c = file_read(0, buf_file, 264);
+	c = file_read(0, buf_file, 284);
 	clear();
 	for (i=0;i < c;i++){
 		putc_term(buf_file[i]);
@@ -162,6 +163,27 @@ int read_file_by_name_test(){
 	return PASS;
 }
 
+int read_file_by_name_test2(){
+	TEST_HEADER;
+	int i, c;
+	struct dentry dent;
+	uint8_t* fn = (uint8_t*)"verylargetextwithverylongname.txt";
+	uint8_t buf_file[5310]; //264
+	read_dentry_by_name(fn, &dent); //change this
+	file_open(fn);
+	c = file_read(0, buf_file, 5310);
+	clear();
+	for (i=0;i < c;i++){
+		putc_term(buf_file[i]);
+	}
+	putc_term('\n');
+	for(i = 0;i < 32;i++)
+	{
+		putc_term(dent.name[i]);
+	}
+	putc_term('\n');
+	return PASS;
+}
 
 int change_rtc_freq_test(int rate){
 	TEST_HEADER;
@@ -215,10 +237,11 @@ void launch_tests(){
 	//TEST_OUTPUT("invalid frequency", rtc_freq_invalid_test(8192));
 	//TEST_OUTPUT("invalid frequency", rtc_freq_invalid_test(4096));
 	//TEST_OUTPUT("invalid frequency", rtc_freq_invalid_test(2048));
-	TEST_OUTPUT("read file by name", read_file_by_name_test());
+	//TEST_OUTPUT("read file by name", read_file_by_name_test());
+	//TEST_OUTPUT("read file by name", read_file_by_name_test2());
 	//TEST_OUTPUT("list all files", list_all_files_test());
 	//TEST_OUTPUT("change rtc frequency", change_rtc_freq_test(3));
 	//TEST_OUTPUT("change rtc frequency", change_rtc_freq_test(2));	
-	//TEST_OUTPUT("terminal test", terminal_read_test());
+	TEST_OUTPUT("terminal test", terminal_read_test());
 
 }
