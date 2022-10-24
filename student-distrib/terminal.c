@@ -17,15 +17,21 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     // read from keyboard buffer to buf until a newline '\n' or as much as fits in the buffer
     // if the buffer is full, return -1
 	int i;
-    char c = 0;
+   // char c = 0;
     if (buf == NULL) {
         return -1;
     }
     if (nbytes > 128) nbytes = 128;
+    //char temp_buffer[128] = {0};
 
     // while(keyboard_buffer[0] == '\0');
     i = 0;
-    while(1) {
+    while(!enterpress);
+    for (i = 0; i < 128; i++) {
+        if ((char) keyboard_buffer[i] == '\n')
+        break;
+    }
+        
         // for (i = 0; i < nbytes; i++) {
         //     if ((char) keyboard_buffer[i] == '\n') {
         //         puts("entered\n");
@@ -33,24 +39,25 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
         //     }
         //     *(((char*)buf) + i) = keyboard_buffer[i];         // copy from keyboard buffer to buf
         // }
-        c = keyboard_buffer[i];
-        while(c == keyboard_buffer[i]);
-        cli();
-        ((char*)buf)[i] = keyboard_buffer[i];
-        if ((char) keyboard_buffer[i] == '\n') {
-            // puts("entered");
-            
-            break;
-        }
-        i++;
-        sti();
-    }
+        // c = keyboard_buffer[i];
+        // while(enterpress
+        // temp_buffer[i] = keyboard_buffer[i];
+        // if ((char) keyboard_buffer[i] == '\n') {
+        //     // puts("entered");
+        //     break;
+        // }
+        // i++;
+        // sti();
+
+
     //clear buffer
     //putc(i + '0');
+    strncpy((char*)buf, keyboard_buffer, i + 1);
     memset(keyboard_buffer, 0, 128);
+    enterpress = 0;
     // add newline character to the end of the buffer
     // *((char*)buf + i + 1) = '\n';
-    sti();
+    // sti();
     return i + 1;
 }
 

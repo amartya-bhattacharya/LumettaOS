@@ -16,6 +16,7 @@ char keyboard_buffer[KEYBOARD_BUFFER_SIZE] = {0};
 int keyboard_buffer_index = 0;
 // special key flag
 uint8_t key_status = 0;
+int enterpress = 0;
 // +-------+------+--------+-----+-----+------+------+-------+
 // |   7   |   6  |   5    |  4  |  3  |  2   |  1   |   0   |
 // +-------+------+--------+-----+-----+------+------+-------+
@@ -255,8 +256,10 @@ void keyboard_handler(void) {
 						keyboard_buffer_index++;
 						putc_term(c);
 					}
+                    enterpress = 1;
 					// terminal_write(0, keyboard_buffer, keyboard_buffer_index);      // TODO move this into tests.c
 					keyboard_buffer_index = 0;
+                    // memset(keyboard_buffer, 0, 128);
 				}
             }
         }
