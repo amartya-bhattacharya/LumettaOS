@@ -3,7 +3,7 @@
  */
 
 #include "filesystem.h"
-#include "paging.h"
+//#include "paging.h"
 
 //address of bootblock which is also address of start of filesystem
 static struct bootblock* boot;
@@ -59,19 +59,19 @@ int32_t read_data(uint32_t nd, uint32_t off, uint8_t* buf, uint32_t len)
 {
 	uint32_t i;
 	struct block* blk;
-	struct inode* nod = (struct inode*)(boot + ((1 + nd) * 4096));	//inode block is 4096 bytes, offset from boot
+	struct inode* nod = (struct inode*)(boot + ((1 + nd) * BLKSIZE));	//inode block is 4096 bytes, offset from boot
 	if(nod->len < len + off)	//if asking for more data than available
 		return -1;
 
-	blk = (struct block*)nod->data[off / 4096];
+	blk = (struct block*)nod->data[off / BLKSIZE];
 	for(i = 0;len > 0;len--)
 	{
-		buf[i] = blk->data[off % 4096];
+		buf[i] = blk->data[off % BLKSIZE];
 		i++;
 		off++;
-		if(off % 4096 == 0)
+		if(off % BLKSIZE == 0)
 		{	//I can cut the if statement and set the blk ptr every loop too if it saves time
-			blk = (struct block*)nod->data[off / 4096];
+			blk = (struct block*)nod->data[off / BLKSIZE];
 		}
 	}
 	return 0;
@@ -155,7 +155,7 @@ int32_t file_open(const uint8_t* fn)
 		return -1;
 	//inode address calculation:
 	//boot address + (inode idx + 1) * 4096 : (4096 is size of inode)
-	file = (struct inode*)((d.ind + 1) * 4096 + (uint32_t)boot);
+	file = (struct inode*)((d.ind + 1) * BLKSIZE + (uint32_t)boot);
 	return 0;
 }
 
@@ -168,7 +168,8 @@ int32_t file_read(int32_t fd, void* buf, int32_t n)
 {
 	static uint32_t offset = 0;
 	offset += n;
-	read_data(((uint32_t)file - (uint32_t)boot) / 4096 - 1, offset, (uint8_t*)buf, n);
+	if(read_data(((uint32_t)file - (uint32_t)boot) / BLKSIZE - 1, offset, (uint8_t*)buf, n))
+		return -1;
 	return 0;
 }
 
