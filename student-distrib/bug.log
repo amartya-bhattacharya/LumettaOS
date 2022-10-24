@@ -69,3 +69,28 @@ Solution:
     I was inputting the value of the first element in the
     struct rather than the address of the struct. I changed 
     this and the issue was solved.
+
+<--------------------------------------------------------->
+                          BUG 6                          
+<--------------------------------------------------------->
+Time:
+    2022.10.23.
+Creator:
+    Diego Del Carpio
+Description:
+    page faulting list_all_files_text
+Solution:
+    dir_open not initiated correctly
+
+<--------------------------------------------------------->
+                          BUG 7                          
+<--------------------------------------------------------->
+Time:
+    2022.10.24.
+Creator:
+    Diego Del Carpio
+Description:
+    not printing list_all_files_text correctly
+Solution:
+    change to 24 bytes instead of 24 bits in the struct
+
