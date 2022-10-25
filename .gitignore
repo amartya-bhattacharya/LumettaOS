@@ -1,4 +1,5 @@
 student-distrib/boot.o
+student-distrib/filesystem.o
 student-distrib/handler_wrapper.o
 student-distrib/i8259.o
 student-distrib/idt.o
