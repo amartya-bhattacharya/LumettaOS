@@ -21,6 +21,7 @@
 
 /* Externally-visible variables */
 extern char keyboard_buffer[128];
+extern int enterpress;
 
 /* Externally-visible functions */
 
