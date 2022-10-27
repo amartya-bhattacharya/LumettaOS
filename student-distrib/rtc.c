@@ -12,7 +12,8 @@
 volatile uint8_t rtc_status = 0;
 int interrupt_count = 0;
 int i_rtc =15; //rate is 15 for test
-int frequency = 32768 >> (15 - 1);  //rate is 15 for test, maximum theoretical frequency is bit-shifted number
+int frequency = 32768 >> (15 - 1);  //rate is 15 for test, maximum theoretical frequency is bit-shifted number// static volatile counter
+
 /*
  * rtc_init
  * DESCRIPTION: Initializes the RTC
@@ -27,6 +28,13 @@ void rtc_init(void) {
     outb(RTC_REG_B, RTC_PORT);          /* set the index again (a read will reset the index to register D) */
     outb(prev | 0x40, RTC_DATA);        /* write the previous value ORed with 0x40 */
     // rtc_open(void);                         /* set the frequency to 2 Hz */
+
+
+
+    // kernel freq always 1024hz (Actual device freq), user freq set by user prog
+    // init rtc to 1024hz
+    // have a counter that goes up to 512
+
 
     enable_irq(RTC_IRQ);                /* enable interrupts */
     rtc_status = 1;                     /* set the status to open */
@@ -45,11 +53,11 @@ int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
     if (buf == NULL) {
         return -1;                          /* if the buffer is NULL, the call returns -1 */
     }
+    // rtc status = 1
     /* wait for the next interrupt */
-    while (rtc_status == 0) {
+    while (rtc_status == 1) {                  // use rtc status to check if max count reached
         /* do nothing */
     }
-    rtc_status = 0;
     return 0;
 }
 
@@ -66,6 +74,8 @@ int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes) {      // TODO mu
     if (buf == NULL) {
         return -1;                          /* if the buffer is NULL, the call returns -1 */
     }
+
+    // divide kernel freq by requested user freq to get max counter val
     int i;
     int rate = 0;
     int freq = *((int*)buf);    // TODO check if this is the right way to do this
@@ -103,6 +113,8 @@ int32_t rtc_open(const uint8_t* filename) {                         /* rate must
     char prev = inb(RTC_DATA);              /* read the current value of register A */
     outb(RTC_REG_A, RTC_PORT);              /* reset index to A */
     outb((prev & 0xF0) | RTC_BASE_RATE, RTC_DATA);   /* write only our rate to A */
+    // init rtc status to 0
+    // init counter to 0
     return 0;
 }   // TODO do I have to disable interrupts for the duration of this function?
 
@@ -154,6 +166,10 @@ void rtc_handler(void) {
     rtc_status=1;
     outb(RTC_REG_C, RTC_PORT);              /* select register C */
     inb(RTC_DATA);                          /* just throw away contents */
+
+    // increment counter
+    // once max is reached
+    // set rtc status to 0
     send_eoi(RTC_IRQ);                      /* send EOI */
     
 }

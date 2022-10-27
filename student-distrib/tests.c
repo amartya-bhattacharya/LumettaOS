@@ -131,8 +131,7 @@ int terminal_read_test(){
 	char buffer_test3[128];						//maximum size of terminal buffer 
 	terminal_open(0);
 	while(1){
-		terminal_read(0, buffer_test3, 128);	//maximum size of terminal buffer 
-		terminal_write(0, buffer_test3, 128);	//maximum size of terminal buffer 
+		terminal_write(0, buffer_test3, terminal_read(0, buffer_test3, 128));	//maximum size of terminal buffer 
 	}
 	terminal_close(0);
 	return PASS;
@@ -321,8 +320,8 @@ void launch_tests(){
 	//TEST_OUTPUT("read file by name executable", read_file_by_name_test_executable());
 	//TEST_OUTPUT("list all files", list_all_files_test());
 	//TEST_OUTPUT("change rtc frequency", change_rtc_freq_test(3));
-	TEST_OUTPUT("change rtc frequency", change_rtc_freq_test(15));	
-	//TEST_OUTPUT("terminal test", terminal_read_test());
+	// TEST_OUTPUT("change rtc frequency", change_rtc_freq_test(15));	
+	TEST_OUTPUT("terminal test", terminal_read_test());
 	//TEST_OUTPUT("check bad input", check_bad_input());
 	//TEST_OUTPUT("check bad input 2", check_bad_input_2());
 	//TEST_OUTPUT("read/write system calls", r_w_syscalls());

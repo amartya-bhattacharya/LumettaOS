@@ -1,0 +1,16 @@
+student-distrib/boot.o
+student-distrib/filesystem.o
+student-distrib/handler_wrapper.o
+student-distrib/i8259.o
+student-distrib/idt.o
+student-distrib/kernel.o
+student-distrib/keyboard.o
+student-distrib/lib.o
+student-distrib/Makefile.dep
+student-distrib/paging.o
+student-distrib/terminal.o
+student-distrib/rtc.o
+student-distrib/tests.o
+student-distrib/x86_desc.o
+student-distrib/mp3.img
+student-distrib/bootimg
