@@ -181,7 +181,7 @@ int read_file_by_name_test2(){
 	TEST_HEADER;
 	int i, c;
 	struct dentry dent;
-	uint8_t* fn = (uint8_t*)"verylargetextwithverylongname.txt";
+	uint8_t* fn = (uint8_t*)"verylargetextwithverylongname.tx";
 	uint8_t buf_file[5310]; //size of file
 	read_dentry_by_name(fn, &dent); //change this
 	file_open(fn);
@@ -282,10 +282,24 @@ int list_all_files_test(){
 	return PASS;
 }
 
-
-
-
 /* Checkpoint 3 tests */
+
+int check_bad_input_2(){
+	return PASS;
+}
+
+int r_w_syscalls(){
+	return PASS;
+}
+
+int execute(){
+	return PASS;
+}
+
+int file_descriptor(){
+	return PASS;
+}
+
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 
@@ -310,5 +324,9 @@ void launch_tests(){
 	TEST_OUTPUT("change rtc frequency", change_rtc_freq_test(15));	
 	//TEST_OUTPUT("terminal test", terminal_read_test());
 	//TEST_OUTPUT("check bad input", check_bad_input());
+	//TEST_OUTPUT("check bad input 2", check_bad_input_2());
+	//TEST_OUTPUT("read/write system calls", r_w_syscalls());
+	//TEST_OUTPUT("execute system call", execute());
+	//TEST_OUTPUT("system calls for file descriptor array", file_descriptor());
 
 }
