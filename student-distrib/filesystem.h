@@ -51,6 +51,10 @@ int32_t dir_write(int32_t fd, const void* buf, int32_t n);
 
 int32_t dir_close(int32_t fd);
 
+int32_t dir_execute(const uint8_t* command);
+
+int32_t dir_halt (uint8_t status);
+
 int32_t file_open(const uint8_t* fn);
 
 int32_t file_read(int32_t fd, void* buf, int32_t n);
@@ -58,5 +62,9 @@ int32_t file_read(int32_t fd, void* buf, int32_t n);
 int32_t file_write(int32_t fd, const void* buf, int32_t n);
 
 int32_t file_close(int32_t fd);
+
+int32_t file_execute(const uint8_t* command);
+
+int32_t file_halt (uint8_t status);
 
 #endif

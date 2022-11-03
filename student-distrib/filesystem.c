@@ -85,6 +85,16 @@ int32_t read_data(uint32_t nd, uint32_t off, uint8_t* buf, uint32_t len)
 	return len;
 }
 
+int32_t dir_execute(const uint8_t* command)
+{
+	return -1;
+}
+
+int32_t dir_halt(uint8_t status)
+{
+	return -1;
+}
+
 /*
  * Loads pointer of boot block, which is the start of a list
  * of 4KiB blocks that make up the filesystem.
@@ -191,4 +201,14 @@ int32_t file_close(int32_t fd)
 	file = 64;	//sets file to something out of bounds
 	offset = 0;
 	return 0;
+}
+
+int32_t file_execute(const uint8_t* command)
+{
+	return -1;
+}
+
+int32_t file_halt (uint8_t status)
+{
+	return -1;
 }
