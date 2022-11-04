@@ -37,6 +37,15 @@ struct bootblock
 	struct dentry dirs[63];	//63 groups of 64 bytes
 } __attribute__((packed));
 
+struct file_desc
+{
+	uint32_t f_op; //jump table i.e. pointer to an array of functions
+	uint32_t inode;
+	uint32_t file_position;
+	uint32_t flag;
+}
+
+
 int32_t read_dentry_by_name(const uint8_t* fname, struct dentry* dent);
 
 int32_t read_dentry_by_index(uint32_t i, struct dentry* dent);
