@@ -8,6 +8,7 @@
 
 /* Local variables */
 char buffer[32] = {0};
+extern int32_t read_data(uint32_t inode, uint32_t off, uint8_t* buf, uint32_t len);
 
 void system_execute(uint8_t * command) {
     // copy command into a buffer until /0 or /n is reached
@@ -18,7 +19,7 @@ void system_execute(uint8_t * command) {
     }
     buffer[i] = '\0';
     // check ELF header to see if it is a executable (read_data first 4 bytes)
-    read_data(boot->dirs[0].ind, 0, (uint8_t *)buffer, 4);
+    //read_data(0, 0, (uint8_t *)buffer, 4);  // boot->dirs[0].ind
     if (buffer[1] != 'E' || buffer[2] != 'L' || buffer[3] != 'F') {
         printf("Not an executable file");
     } else {
