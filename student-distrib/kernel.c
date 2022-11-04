@@ -13,6 +13,7 @@
 #include "rtc.h"
 #include "paging.h"
 #include "filesystem.h"
+#include "syscall.h"
 
 #define RUN_TESTS
 
@@ -159,12 +160,13 @@ void entry(unsigned long magic, unsigned long addr) {
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     //clear();
+    system_execute("ls");
     printf("Enabling Interrupts\n");
     sti();
     
     #ifdef RUN_TESTS
         /* Run tests */
-        launch_tests();
+        // launch_tests();
     #endif
     /* Execute the first program ("shell") ... */
 
