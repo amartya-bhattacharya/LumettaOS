@@ -10,10 +10,13 @@
 static struct bootblock* boot;
 
 //inode number for current file
-static uint32_t file = 64;	//64 is always out of bounds
+static uint32_t file[8] = {0, 0, 64, 64, 64, 64, 64, 64};	//64 is always out of bounds
+
+//array that shows available files
+static uint8_t avlfiles = 0xFC;
 
 //saves amount of bytes already read in a file
-static uint32_t offset;
+static uint32_t offset[8];
 
 //saves index of last accessed directory
 static uint32_t dnum;
@@ -165,11 +168,20 @@ int32_t dir_close(int32_t fd)
 int32_t file_open(const uint8_t* fn)
 {
 	struct dentry d;
+	int32_t i;
 	if(read_dentry_by_name(fn, &d))
 		return -1;
-	file = d.ind;
-	offset = 0;
-	return 0;
+	for(i = 2;i < 8;i++)
+	{
+		if(avlfiles & (0x1 << i))
+		{
+			avlfiles &= ~(0x1 << i);	//unsets bit to make file not available any more
+			file[i] = d.ind;
+			offset[i] = 0;
+			return i;
+		}
+	}
+	return -1;	//no more available files
 }
 
 /*
@@ -179,8 +191,10 @@ int32_t file_open(const uint8_t* fn)
  */
 int32_t file_read(int32_t fd, void* buf, int32_t n)
 {
-	n = read_data(file, offset, (uint8_t*)buf, n);
-	offset += n;
+	if(fd > 7)
+		return -1;
+	n = read_data(file[fd], offset[fd], (uint8_t*)buf, n);
+	offset[fd] += n;
 	return n;
 }
 
@@ -198,8 +212,11 @@ int32_t file_write(int32_t fd, const void* buf, int32_t n)
  */
 int32_t file_close(int32_t fd)
 {
-	file = 64;	//sets file to something out of bounds
-	offset = 0;
+	if(fd > 7 || fd < 2)
+		return -1;
+	file[fd] = 64;	//sets file to something out of bounds
+	offset[fd] = 0;
+	avlfiles |= 0x1 << fd;	//makes file available again
 	return 0;
 }
 
