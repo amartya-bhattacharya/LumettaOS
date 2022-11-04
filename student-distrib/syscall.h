@@ -5,3 +5,8 @@
 #ifndef _SYSCALL_H
 #define _SYSCALL_H
 
+#include "types.h"
+
+void system_execute(uint8_t * command);
+
+#endif /* _SYSCALL_H */
