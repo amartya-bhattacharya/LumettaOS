@@ -59,3 +59,50 @@ int32_t system_execute(const uint8_t * command) {
     // set up and load pcb (setup fd[0] and fd[1])
     return 0;
 }
+
+int32_t open (const uint8_t* filename){
+     int file_type = get_filetype(filename);
+     // if(file_type == -1){
+     //      return -1;
+     // }
+     //return -1 if array is full
+     //if (file_type == 0){
+          //set the f_op fields to RTC
+     //      for ()
+     //      file_desc_tb[]
+     // }
+     //else if(file_type ==1){
+          //set the f_op fields to directory
+     //}
+     //else if(file_type == 2){
+          //set the f_op fields to regular file
+     //}
+ 
+     return -1;
+
+}
+
+int32_t write (int32_t fd, const void* buf, int32 t nbytes){
+
+     return -1;
+    /*
+    * TODO: make assembly file with jmp table to jump to these c 
+    * functions
+    */
+
+     //fd is an integer index into the file descriptor table
+     //access the file operations table ptr within the desctable index and 
+     //tells you what specific system call to execute
+
+     if(file_desc_tb[fd].fotp == 0){
+          
+     }
+}
+
+int32_t read (int32_t fd, void* buf, int32 t nbytes){
+     return -1;
+}
+
+int32_t close (int32_t fd){
+     return -1;
+}
