@@ -113,5 +113,7 @@ void spawnTbl(union tblEntry tab[1024]);
 void page_init();
 /* edits a 4MiB page of the page directory for further page usage */
 void chgDir(uint32_t idx, union dirEntry e);
+/* overwrites %cr3 (with same value it had before) to flush the TLB */
+void flushTLB();
 
 #endif /* _PAGING_H */
