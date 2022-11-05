@@ -55,6 +55,8 @@ struct file_desc
 
 int32_t get_filetype(const uint8_t* fname);
 
+int32_t get_inode(const uint8_t* fname);
+
 int32_t read_dentry_by_name(const uint8_t* fname, struct dentry* dent);
 
 int32_t read_dentry_by_index(uint32_t i, struct dentry* dent);
