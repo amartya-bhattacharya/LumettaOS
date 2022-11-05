@@ -16,3 +16,4 @@ student-distrib/mp3.img
 student-distrib/bootimg
 student-distrib/syscall.o
 student-distrib/system_calls.o
+.vscode/settings.json
