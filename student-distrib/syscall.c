@@ -4,29 +4,58 @@
 
 #include "syscall.h"
 #include "lib.h"
+#include "filesystem.h"
 #include "paging.h"
 
 /* Local variables */
-char buffer[32] = {0};
-extern int32_t read_data(uint32_t inode, uint32_t off, uint8_t* buf, uint32_t len);
+int8_t check_exe[4] = {0x7f, 0x45, 0x4c, 0x46};  // first 4 bytes identifying an executable
 
-void system_execute(uint8_t * command) {
+/* Local functions */
+int32_t system_execute(const uint8_t * command) {
+    uint8_t command_name[32] = {0};
+    uint32_t args[128] = {0};
+    int8_t exe[40] = {0};  // header occupies first 40 bytes of the file
+    struct dentry command_dentry;
+    uint32_t command_inode;
+    void * entry_point;
+
     // copy command into a buffer until /0 or /n is reached
     int i = 0;
-    while (command[i] != '\0' && command[i] != '\n' && i < 32) {
-        buffer[i] = command[i];
+    while (command[i] != '\n' && command[i] != ' ' && i < 32) {
+        command_name[i] = command[i];
         i++;
     }
-    buffer[i] = '\0';
-    // check ELF header to see if it is a executable (read_data first 4 bytes)
-    //read_data(0, 0, (uint8_t *)buffer, 4);  // boot->dirs[0].ind
-    if (buffer[1] != 'E' || buffer[2] != 'L' || buffer[3] != 'F') {
-        printf("Not an executable file");
-    } else {
-        printf("pass");
+    // TODO check if command was an enter press
+    // TODO check if command is quit terminal
+
+    // check rest of command for arguments
+    if (command[i] == ' ') {
+        i++;
+        int j = 0;
+        while (command[i] != '\n' && i < 128) {
+            args[j] = command[i];
+            i++;
+            j++;
+        }
     }
+    
+    if (read_dentry_by_name(command_name, &command_dentry))
+        return -1; // read failed
+
+    // TODO check dentry file descriptor
+
+    command_inode = command_dentry.ind;
+
+    // check ELF header to see if it is a executable (read_data first 4 bytes)
+    read_data(command_inode, 0, (uint8_t *)exe, 40);
+    if (strncmp(exe, check_exe, 4))
+        return -1; // not an executable
+    
+    entry_point = (void *)(exe[24] + (exe[25] << 8) + (exe[26] << 16) + (exe[27] << 24));
+    
     // set up paging for the program (flush TLB)
     // load in data
     // tss.esp0 = kernel stack pointer
     // set up and load pcb (setup fd[0] and fd[1])
+    return 0;
 }

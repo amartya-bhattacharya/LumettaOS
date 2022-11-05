@@ -13,7 +13,7 @@ struct dentry
 {
 	uint8_t name[32];	//if all 32 chars are filled no '\0'
 	uint32_t ft;
-	uint32_t ind;
+	uint32_t ind;		// inode index
 	uint8_t res[24];
 } __attribute__((packed));
 
@@ -43,7 +43,7 @@ struct file_desc
 	uint32_t inode;
 	uint32_t file_position;
 	uint32_t flag;
-}
+};
 
 
 int32_t read_dentry_by_name(const uint8_t* fname, struct dentry* dent);
