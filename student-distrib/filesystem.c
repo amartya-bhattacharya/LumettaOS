@@ -23,6 +23,18 @@ static uint32_t dnum;
 
 //static union tblEntry fstable[1024] __attribute__((aligned(4096)));
 
+int32_t get_filetype(const uint8_t* fname){
+	int i;
+	for(i = 0;i < boot->nent;i++)	//iterate through dentries
+	{
+		if(strncmp((int8_t*)fname, (int8_t*)(boot->dirs[i].name), 32) == 0)	//maximum size of a filename 
+		{
+			return boot->dirs[i].ft;
+		}
+	}
+	return -1;
+}
+
 /*
  * Changes dent to be that of corresponding filename
  * Inputs: filename, dentry
