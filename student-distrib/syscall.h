@@ -7,6 +7,6 @@
 
 #include "types.h"
 
-void system_execute(uint8_t * command);
+int32_t system_execute(const uint8_t * command);
 
 #endif /* _SYSCALL_H */
