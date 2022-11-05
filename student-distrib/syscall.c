@@ -6,6 +6,8 @@
 #include "lib.h"
 #include "filesystem.h"
 #include "paging.h"
+#include "rtc.h"
+
 
 /* Local variables */
 int8_t check_exe[4] = {0x7f, 0x45, 0x4c, 0x46};  // first 4 bytes identifying an executable
@@ -61,22 +63,47 @@ int32_t system_execute(const uint8_t * command) {
 }
 
 int32_t open (const uint8_t* filename){
-     int file_type = get_filetype(filename);
+     // int file_type = get_filetype(filename);
+     // int found_open_fd=0;
      // if(file_type == -1){
      //      return -1;
      // }
-     //return -1 if array is full
-     //if (file_type == 0){
-          //set the f_op fields to RTC
-     //      for ()
-     //      file_desc_tb[]
+     // //return -1 if array is full
+     // if (file_type == 0){
+     //      //set the f_op fields to RTC
+     // int i;
+     // for (i=2; i<8; i++){
+     //      if(file_desc_tb[i].flag == 0){  //if entry dne
+     //           found_open_fd=1;
+     //           file_desc_tb[i].f_op->read=rtc_read;
+     //           break;
+     //      }
+     //  }
+     //  if(found_open_fd ==0){
+     //      return -1;
+     //  }
      // }
-     //else if(file_type ==1){
-          //set the f_op fields to directory
-     //}
-     //else if(file_type == 2){
-          //set the f_op fields to regular file
-     //}
+     // else if(file_type ==1){
+     //      //set the f_op fields to directory
+     //      int i;
+     //      for (i=2; i<8; i++){
+     //           if(file_desc_tb[i].flag == 0){  //if entry dne
+     //                found_open_fd=1;
+     //                file_desc_tb[i].f_op->read=rtc_read;
+     //                file_desc_tb[i].f_op->write=rtc_write;
+     //                file_desc_tb[i].f_op->open=rtc_open;
+     //                file_desc_tb[i].f_op->close=rtc_close;
+     //                break;
+     //           }
+     //      }
+     //      if(found_open_fd ==0){
+     //           return -1;
+     //      }
+     // }
+     // else if(file_type == 2){
+     //      //set the f_op fields to regular file
+
+     // }
  
      return -1;
 
