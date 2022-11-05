@@ -55,8 +55,11 @@ int32_t system_execute(const uint8_t * command) {
     
     entry_point = (void *)(exe[24] + (exe[25] << 8) + (exe[26] << 16) + (exe[27] << 24));
     
-    // set up paging for the program (flush TLB)
+    // set up paging for the program (flush TLB)	// TODO @Vasilis
+
     // load in data
+	read_data(command_inode, 0, (uint8_t *)(_128MB + PROC_OFFSET), KERNEL_STACK_BOTTOM);	// results in page fault for now, need to set up paging
+
     // tss.esp0 = kernel stack pointer
     // set up and load pcb (setup fd[0] and fd[1])
     return 0;
@@ -109,7 +112,7 @@ int32_t open (const uint8_t* filename){
 
 }
 
-int32_t write (int32_t fd, const void* buf, int32 t nbytes){
+int32_t write (int32_t fd, const void* buf, int32_t nbytes){
 
      return -1;
     /*
@@ -121,12 +124,12 @@ int32_t write (int32_t fd, const void* buf, int32 t nbytes){
      //access the file operations table ptr within the desctable index and 
      //tells you what specific system call to execute
 
-     if(file_desc_tb[fd].fotp == 0){
+     // if(file_desc_tb[fd].fotp == 0){
           
-     }
+     // }
 }
 
-int32_t read (int32_t fd, void* buf, int32 t nbytes){
+int32_t read (int32_t fd, void* buf, int32_t nbytes){
      return -1;
 }
 
