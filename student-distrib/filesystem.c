@@ -11,7 +11,7 @@ static struct bootblock* boot;
 
 //inode number for current file
 static uint32_t file[8] = {0, 0, 64, 64, 64, 64, 64, 64};	//64 is always out of bounds
-extern struct file_desc file_desc_tb[8];
+
 //array that shows available files
 static uint8_t avlfiles = 0xFC;
 
@@ -30,6 +30,18 @@ int32_t get_filetype(const uint8_t* fname){
 		if(strncmp((int8_t*)fname, (int8_t*)(boot->dirs[i].name), 32) == 0)	//maximum size of a filename 
 		{
 			return boot->dirs[i].ft;
+		}
+	}
+	return -1;
+}
+
+int32_t get_inode(const uint8_t* fname){
+	int i;
+	for(i = 0;i < boot->nent;i++)	//iterate through dentries
+	{
+		if(strncmp((int8_t*)fname, (int8_t*)(boot->dirs[i].name), 32) == 0)	//maximum size of a filename 
+		{
+			return boot->dirs[i].ind;
 		}
 	}
 	return -1;
