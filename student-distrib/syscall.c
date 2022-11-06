@@ -11,7 +11,12 @@
 
 /* Local variables */
 int8_t check_exe[4] = {0x7f, 0x45, 0x4c, 0x46};  // first 4 bytes identifying an executable
-extern struct file_desc file_desc_tb[8];
+pcb_t* curr_pcb[MAX_PROCESSES] = {(pcb_t*)(_8MB - 2 * _8KB),
+								  (pcb_t*)(_8MB - 3 * _8KB),
+								  (pcb_t*)(_8MB - 4 * _8KB),
+								  (pcb_t*)(_8MB - 5 * _8KB),
+								  (pcb_t*)(_8MB - 6 * _8KB),
+								  (pcb_t*)(_8MB - 7 * _8KB)};  // array of pointers to pcb's
 
 /* Local functions */
 int32_t system_execute(const uint8_t * command) {
@@ -58,80 +63,86 @@ int32_t system_execute(const uint8_t * command) {
     
     // set up paging for the program (flush TLB)	// TODO @Vasilis
 
+	// find first active pcb
+	int pcb_index = 0;
+	while (pcb_index < MAX_PROCESSES && !curr_pcb[pcb_index]->active) pcb_index++;
+	if (pcb_index == MAX_PROCESSES) return -1;  // no available pcb's
+
     // load in data
-	read_data(command_inode, 0, (uint8_t *)(_128MB + PROC_OFFSET), KERNEL_STACK_BOTTOM);	// results in page fault for now, need to set up paging
+	read_data(command_inode, 0, (uint8_t *)(_128MB + PROC_OFFSET), KERNEL_STACK_BOTTOM);	// results in page fault for now, need to set up paging 
 
     // tss.esp0 = kernel stack pointer
+
     // set up and load pcb (setup fd[0] and fd[1])
     return 0;
 }
 
 int32_t open (const uint8_t* filename){
-     int file_type = get_filetype(filename);
-     int found_open_fd=0;
-     int i;
-     if(file_type == -1){
-          return -1;
-     }
-     //return -1 if array is full
-     if (file_type == 0){
-          //set the f_op fields to RTC
+    //  int file_type = get_filetype(filename);
+    //  int found_open_fd=0;
+    //  int i;
+    //  if(file_type == -1){
+    //       return -1;
+    //  }
+    //  //return -1 if array is full
+    //  if (file_type == 0){
+    //       //set the f_op fields to RTC
     
-          for (i=2; i<8; i++){
-               if(file_desc_tb[i].flag == 0){  //if entry dne
-                    found_open_fd=1;
-                    file_desc_tb[i].f_op->read=rtc_read;
-                    file_desc_tb[i].f_op->write=rtc_write;
-                    file_desc_tb[i].f_op->open=rtc_open;
-                    file_desc_tb[i].f_op->close=rtc_close;
-                    file_desc_tb[i].flag=1;
-                    file_desc_tb[i].file_position=0;
-                    break;
-               }
-          }
-          if(found_open_fd ==0){
-               return -1;
-          }
-     }
-     else if(file_type ==1){
-          //set the f_op fields to directory
-          for (i=2; i<8; i++){
-               if(file_desc_tb[i].flag == 0){  //if entry dne
-                    found_open_fd=1;
-                    file_desc_tb[i].f_op->read=dir_read;
-                    file_desc_tb[i].f_op->write=dir_write;
-                    file_desc_tb[i].f_op->open=dir_open;
-                    file_desc_tb[i].f_op->close=dir_close;
-                    file_desc_tb[i].flag=1;
-                    file_desc_tb[i].file_position=0;
-                    break;
-               }
-          }
-          if(found_open_fd ==0){ //if table is full
-               return -1;
-          }
-     }
-     else if(file_type == 2){
-          //set the f_op fields to regular file
-          for (i=2; i<8; i++){
-               if(file_desc_tb[i].flag == 0){  //if entry dne
-               //HOW WOULD I WRITE TO TERMINAL??
-                    found_open_fd=1;
-                    file_desc_tb[i].f_op->read=file_read;
-                    file_desc_tb[i].f_op->write=file_write;
-                    file_desc_tb[i].f_op->open=file_open;
-                    file_desc_tb[i].f_op->close=file_close;
-                    file_desc_tb[i].flag=1;
-                    file_desc_tb[i].file_position=0;
-                    file_desc_tb[i].inode=get_inode(filename);
-                    break;
-               }
-          }
-          if(found_open_fd ==0){ //if table is full
-               return -1;
-          }
+    //       for (i=2; i<8; i++){
+    //            if(file_desc_tb[i].flag == 0){  //if entry dne
+    //                 found_open_fd=1;
+    //                 file_desc_tb[i].f_op->read=rtc_read;
+    //                 file_desc_tb[i].f_op->write=rtc_write;
+    //                 file_desc_tb[i].f_op->open=rtc_open;
+    //                 file_desc_tb[i].f_op->close=rtc_close;
+    //                 file_desc_tb[i].flag=1;
+    //                 file_desc_tb[i].file_position=0;
+    //                 break;
+    //            }
+    //       }
+    //       if(found_open_fd ==0){
+    //            return -1;
+    //       }
+    //  }
+    //  else if(file_type ==1){
+    //       //set the f_op fields to directory
+    //       for (i=2; i<8; i++){
+    //            if(file_desc_tb[i].flag == 0){  //if entry dne
+    //                 found_open_fd=1;
+    //                 file_desc_tb[i].f_op->read=dir_read;
+    //                 file_desc_tb[i].f_op->write=dir_write;
+    //                 file_desc_tb[i].f_op->open=dir_open;
+    //                 file_desc_tb[i].f_op->close=dir_close;
+    //                 file_desc_tb[i].flag=1;
+    //                 file_desc_tb[i].file_position=0;
+    //                 break;
+    //            }
+    //       }
+    //       if(found_open_fd ==0){ //if table is full
+    //            return -1;
+    //       }
+    //  }
+    //  else if(file_type == 2){
+    //       //set the f_op fields to regular file
+    //       for (i=2; i<8; i++){
+    //            if(file_desc_tb[i].flag == 0){  //if entry dne
+    //            //HOW WOULD I WRITE TO TERMINAL??
+    //                 found_open_fd=1;
+    //                 file_desc_tb[i].f_op->read=file_read;
+    //                 file_desc_tb[i].f_op->write=file_write;
+    //                 file_desc_tb[i].f_op->open=file_open;
+    //                 file_desc_tb[i].f_op->close=file_close;
+    //                 file_desc_tb[i].flag=1;
+    //                 file_desc_tb[i].file_position=0;
+    //                 file_desc_tb[i].inode=get_inode(filename);
+    //                 break;
+    //            }
+    //       }
+    //       if(found_open_fd ==0){ //if table is full
+    //            return -1;
+    //       }
 
-     }
+    //  }
  
      return 0;
 
