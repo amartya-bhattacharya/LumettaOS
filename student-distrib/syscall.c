@@ -12,6 +12,9 @@
 /* Local variables */
 int8_t check_exe[4] = {0x7f, 0x45, 0x4c, 0x46};  // first 4 bytes identifying an executable
 
+//file descriptor array
+extern struct file_desc file_desc_tb[8];
+
 /* Local functions */
 int32_t system_execute(const uint8_t * command) {
     uint8_t command_name[32] = {0};
@@ -65,7 +68,7 @@ int32_t system_execute(const uint8_t * command) {
     return 0;
 }
 
-int32_t open (const uint8_t* filename){
+int32_t sys_open (const uint8_t* filename){
      // int file_type = get_filetype(filename);
      // int found_open_fd=0;
      // if(file_type == -1){
@@ -112,9 +115,7 @@ int32_t open (const uint8_t* filename){
 
 }
 
-int32_t write (int32_t fd, const void* buf, int32_t nbytes){
-
-     return -1;
+int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes){
     /*
     * TODO: make assembly file with jmp table to jump to these c 
     * functions
@@ -127,12 +128,36 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
      // if(file_desc_tb[fd].fotp == 0){
           
      // }
-}
 
-int32_t read (int32_t fd, void* buf, int32_t nbytes){
+     if(fd > 1){
+          int32_t valid = (file_desc_tb[fd].f_op)->write(fd, buf, nbytes);
+          if(valid != -1){
+            return nbytes;
+          }
+     }
      return -1;
 }
 
-int32_t close (int32_t fd){
+int32_t sys_read (int32_t fd, void* buf, int32_t nbytes){
+     
+     if(fd > 1){
+          int32_t valid = (file_desc_tb[fd].f_op)->read(fd, buf, nbytes);
+          if(valid != -1){
+            file_desc_tb[fd].file_position += nbytes;
+            return nbytes;
+          }
+     }
      return -1;
+}
+
+int32_t sys_close (int32_t fd){
+    if(fd == 1 || fd == 0)
+        return 1;
+
+    file_desc_tb[fd].f_op = idk;
+    file_desc_tb[fd].inode = 0;
+    file_desc_tb[fd].file_position = 0;
+    file_desc_tb[fd].flag = 0; 
+
+    return -1;
 }

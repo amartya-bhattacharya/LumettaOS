@@ -24,3 +24,65 @@ rtc_handler_wrapper:
     popfl
     popal
     iret
+
+# wrapper for systemcall interrupt handler
+.globl syscall_wrapper
+.align 4
+eax_mem: .long 0x0
+
+syscall_wrapper:
+    pushal
+    pushfl
+    pushl %ebp
+    pushl %edi
+    pushl %esi
+    pushl %edx
+    pushl %ecx
+    pushl %ebx
+    cmpl $4, %eax
+    ja invalid
+    call *sys_call_table(0, %eax, 4)
+    movl %eax, eax_mem
+    iret
+
+    invalid:
+    popl %ebx
+    popl %ecx
+    popl %edx
+    popl %esi
+    popl %edi
+    popl %ebp
+    popfl
+    popal
+    movl $-1, %eax
+    ret
+
+    sys_call_table:
+    .long halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn
+
+
+
+
+
+    //     pushl %ebx
+    //     movl 0x10(%esp), %edx   #third arg 
+    //     movl 0x0C(%esp), %ecx   #second arg
+    //     movl 0x08(%esp), %ebx   #first arg
+    //     movl $0x05, %eax        #system call
+    //     int 0x80
+    //     cmpl $0x0FFFFF001, %eax
+    //     jb done
+    //     xorl %edx, %edx
+    //     subl %eax, %edx
+    //     pushl %edx
+    //     call __errno_location
+    //     popl %ecx
+    //     movl %ecx, (%eax)
+    //     orl $0xFFFFFFFF, %eax
+
+    // __errno_location:
+    //     call getIP
+    // raddr: addl $errno-raddr, %eax
+    //         ret
+    // getIP: movl (%esp), %eax
+    //         ret
