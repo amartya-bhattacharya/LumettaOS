@@ -26,6 +26,7 @@ int32_t system_execute(const uint8_t * command) {
     struct dentry command_dentry;
     uint32_t command_inode;
     void * entry_point;
+	union dirEntry d;
 
     // copy command into a buffer until /0 or /n is reached
     int i = 0;
@@ -62,6 +63,10 @@ int32_t system_execute(const uint8_t * command) {
     entry_point = (void *)(exe[24] + (exe[25] << 8) + (exe[26] << 16) + (exe[27] << 24));
     
     // set up paging for the program (flush TLB)	// TODO @Vasilis
+	d.val = 3;		//sets P and RW bits
+	//d.whole.add_22_31 = (_8MB + _4MB * ) >> 22;
+	chgDir(32, d);	//32 = 128 / 4 (all programs are in the 128-132 MiB vmem page
+	flushTLB();
 
 	// find first active pcb
 	int pcb_index = 0;
