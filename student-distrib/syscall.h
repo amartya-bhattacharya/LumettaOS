@@ -22,10 +22,11 @@
 
 /* Externally-visible functions */
 int32_t system_execute(const uint8_t * command);
-int32_t open (const uint8_t* filename);
-int32_t write (int32_t fd, const void* buf, int32_t nbytes);
-int32_t read (int32_t fd, void* buf, int32_t nbytes);
-int32_t close (int32_t fd);
+int32_t sys_open (const uint8_t* filename);
+int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes);
+int32_t sys_read (int32_t fd, void* buf, int32_t nbytes);
+int32_t sys_close (int32_t fd);
+extern struct file_desc file_desc_tb[8];
 
 /* Wrapper function for syscall handler */
 void syscall_wrapper();

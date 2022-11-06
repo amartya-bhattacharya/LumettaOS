@@ -7,13 +7,11 @@
 #include "filesystem.h"
 #include "paging.h"
 #include "rtc.h"
+#include "terminal.h"
 
 
 /* Local variables */
 int8_t check_exe[4] = {0x7f, 0x45, 0x4c, 0x46};  // first 4 bytes identifying an executable
-
-//file descriptor array
-extern struct file_desc file_desc_tb[8];
 
 /* Local functions */
 int32_t system_execute(const uint8_t * command) {
@@ -68,50 +66,78 @@ int32_t system_execute(const uint8_t * command) {
     return 0;
 }
 
-int32_t sys_open (const uint8_t* filename){
-     // int file_type = get_filetype(filename);
-     // int found_open_fd=0;
-     // if(file_type == -1){
-     //      return -1;
-     // }
-     // //return -1 if array is full
-     // if (file_type == 0){
-     //      //set the f_op fields to RTC
-     // int i;
-     // for (i=2; i<8; i++){
-     //      if(file_desc_tb[i].flag == 0){  //if entry dne
-     //           found_open_fd=1;
-     //           file_desc_tb[i].f_op->read=rtc_read;
-     //           break;
-     //      }
-     //  }
-     //  if(found_open_fd ==0){
-     //      return -1;
-     //  }
-     // }
-     // else if(file_type ==1){
-     //      //set the f_op fields to directory
-     //      int i;
-     //      for (i=2; i<8; i++){
-     //           if(file_desc_tb[i].flag == 0){  //if entry dne
-     //                found_open_fd=1;
-     //                file_desc_tb[i].f_op->read=rtc_read;
-     //                file_desc_tb[i].f_op->write=rtc_write;
-     //                file_desc_tb[i].f_op->open=rtc_open;
-     //                file_desc_tb[i].f_op->close=rtc_close;
-     //                break;
-     //           }
-     //      }
-     //      if(found_open_fd ==0){
-     //           return -1;
-     //      }
-     // }
-     // else if(file_type == 2){
-     //      //set the f_op fields to regular file
 
-     // }
- 
-     return -1;
+/*int32_t open(const uint8_t* filename)
+* DESCRIPTION: Open systemcall that initializes the file descriptor table entry
+* INPUTS: uint8_t filename
+* OUTPUTS: -1 upon failure, 0 upon success
+* 
+ */
+int32_t sys_open (const uint8_t* filename){
+     int file_type = get_filetype(filename);
+     int found_open_fd=0;
+     int i;
+
+     if(file_type == -1){
+          return -1;
+     }
+     //return -1 if array is full
+     if (file_type == 0){
+          //set the f_op fields to RTC
+    
+          for (i=2; i<8; i++){
+               if(file_desc_tb[i].flag == 0){  //if entry dne
+                    found_open_fd=1;
+                    file_desc_tb[i].f_op->read=rtc_read;
+                    file_desc_tb[i].f_op->write=rtc_write;
+                    file_desc_tb[i].f_op->open=rtc_open;
+                    file_desc_tb[i].f_op->close=rtc_close;
+                    file_desc_tb[i].flag=1;
+                    file_desc_tb[i].file_position=0;
+                    break;
+               }
+          }
+          if(found_open_fd ==0){
+               return -1;
+          }
+     }
+     else if(file_type ==1){
+          //set the f_op fields to directory
+          for (i=2; i<8; i++){
+               if(file_desc_tb[i].flag == 0){  //if entry dne
+                    found_open_fd=1;
+                    file_desc_tb[i].f_op->read=dir_read;
+                    file_desc_tb[i].f_op->write=dir_write;
+                    file_desc_tb[i].f_op->open=dir_open;
+                    file_desc_tb[i].f_op->close=dir_close;
+                    file_desc_tb[i].flag=1;
+                    file_desc_tb[i].file_position=0;
+                    break;
+               }
+          }
+          if(found_open_fd ==0){ //if table is full
+               return -1;
+          }
+     }
+     else if(file_type == 2){
+          //set the f_op fields to regular file
+          for (i=2; i<8; i++){
+               if(file_desc_tb[i].flag == 0){  //if entry dne
+               //HOW WOULD I WRITE TO TERMINAL??
+                    found_open_fd=1;
+                    file_desc_tb[i].f_op->read=file_read;
+                    file_desc_tb[i].f_op->write=file_write;
+                    file_desc_tb[i].f_op->open=file_open;
+                    file_desc_tb[i].f_op->close=file_close;
+                    file_desc_tb[i].flag=1;
+                    file_desc_tb[i].file_position=0;
+                    file_desc_tb[i].inode=get_inode(filename);
+                    break;
+               }
+          }
+          if(found_open_fd ==0){ //if table is full
+               return -1;
+          }
 
 }
 
