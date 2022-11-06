@@ -6,6 +6,7 @@
 #define _SYSCALL_H
 
 #include "types.h"
+#include "filesystem.h"
 
 /* Page directory and page table constants */
 #define PAGE_DIR_SIZE 1024
@@ -19,6 +20,18 @@
 #define MASK_8KB 0xFFFFE000
 #define MAX_PROCESSES 6
 #define KERNEL_STACK_BOTTOM (PAGE_DIR_SIZE - 1) * _4KB
+
+/* Struct for the PCB */
+typedef struct pcb_t {
+    struct file_desc file_desc_tb[8];   // file descriptor array
+    uint32_t pid;
+    uint32_t parent_pid;
+    uint32_t saved_esp;
+    uint32_t saved_ebp;
+    uint32_t active;
+} pcb_t;
+
+extern pcb_t * curr_pcb[MAX_PROCESSES];
 
 /* Externally-visible functions */
 int32_t system_execute(const uint8_t * command);
