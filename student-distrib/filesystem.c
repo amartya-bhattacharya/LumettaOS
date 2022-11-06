@@ -11,7 +11,7 @@ static struct bootblock* boot;
 
 //inode number for current file
 static uint32_t file[8] = {0, 0, 64, 64, 64, 64, 64, 64};	//64 is always out of bounds
-extern struct file_desc file_desc_tb[8];
+
 //array that shows available files
 static uint8_t avlfiles = 0xFC;
 
