@@ -76,6 +76,7 @@ void set_fda(){
  */
 int32_t sys_halt(uint8_t status) {
     pcb_t * pcb = get_pcb();
+    union dirEntry d;
 
     if (pcb->pid < 3) { // don't halt the shell or the init process
         return 0;
