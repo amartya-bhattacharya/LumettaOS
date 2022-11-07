@@ -293,7 +293,7 @@ int r_w_syscalls(){
 	return PASS;
 }
 
-int execute(){
+int execute_test(){
 	return PASS;
 }
 
