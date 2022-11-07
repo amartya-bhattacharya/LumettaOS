@@ -24,5 +24,8 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes);
 int32_t terminal_open(const uint8_t* filename);
 /* Close the terminal */
 int32_t terminal_close(int32_t fd);
-
+/* Fail function for open */
+int32_t terminal_open_fail(const uint8_t* filename);
+/* Fail function for close*/
+int32_t terminal_close_fail(int32_t fd);
 #endif /* _TERMINAL_H */
