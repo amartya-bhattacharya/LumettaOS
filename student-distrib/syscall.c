@@ -19,6 +19,7 @@ pcb_t* curr_pcb[MAX_PROCESSES] = {(pcb_t*)(_8MB - 2 * _8KB),
 								  (pcb_t*)(_8MB - 6 * _8KB),
 								  (pcb_t*)(_8MB - 7 * _8KB)};  // array of pointers to pcb's
 
+
 /* Local functions */
 pcb_t * get_pcb() {
     pcb_t * pcb;
@@ -51,7 +52,7 @@ int32_t system_halt(uint8_t status) {
         "movl %0, %%esp;"
         "movl %1, %%ebp;"
         :
-        :"r"(pcb->saved_esp), "r"(pcb->saved_ebp)
+        :"=r"(pcb->saved_esp), "=r"(pcb->saved_ebp)
         :"%esp", "%ebp"
     );
 
@@ -64,7 +65,11 @@ int32_t system_halt(uint8_t status) {
     uint32_t parent_page_table = _8MB - (parent_pid + 1) * _4KB;
 
     // TODO flush tlb
+    flushTLB();
+
     // TODO reset tss
+    tss.ss0 = KERNEL_DS;
+    tss.esp0 = _8MB - (parent_pid + 1) * _8KB;
     // TODO jump to end of execute asm code (need to add the label); TODO add a leave and ret to the end
     return status;  // TODO check if this is correct, or if we need to return 0/-1
 }
@@ -113,16 +118,16 @@ int32_t system_execute(const uint8_t * command) {
     
     entry_point = (void *)(exe[24] + (exe[25] << 8) + (exe[26] << 16) + (exe[27] << 24));
     
-    // set up paging for the program (flush TLB)	// TODO @Vasilis
-	d.val = 3;		//sets P and RW bits
-	//d.whole.add_22_31 = (_8MB + _4MB * ) >> 22;
-	chgDir(32, d);	//32 = 128 / 4 (all programs are in the 128-132 MiB vmem page
-	flushTLB();
-
-	// find first active pcb
+    // find first active pcb
 	int pcb_index = 0;
 	while (pcb_index < MAX_PROCESSES && curr_pcb[pcb_index]->active) pcb_index++;
 	if (pcb_index == MAX_PROCESSES) return -1;  // no available pcb's
+
+    // set up paging for the program (flush TLB)	// TODO @Vasilis
+	d.val = 3;		//sets P and RW bits
+	d.whole.add_22_31 = (_8MB + _4MB * pcb_index) >> 22;
+	chgDir(32, d);	//32 = 128 / 4 (all programs are in the 128-132 MiB vmem page
+	flushTLB();
 
     // put arguments in pcb
     strcpy(curr_pcb[pcb_index]->args, args);    // TODO might need to typecast to (int8_t *)
