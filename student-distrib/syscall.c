@@ -14,6 +14,26 @@
 int8_t check_exe[4] = {0x7f, 0x45, 0x4c, 0x46};  // first 4 bytes identifying an executable
 
 /* Local functions */
+struct fap fap_func_arr[3] ;
+
+
+/* defines the file descriptor array, only to check 
+compile errors for sys calls, comment out later once
+PCB is implemented*/
+void set_fda(){ 
+	unsigned i;
+	for(i = 0; i < 8; i++){
+		file_desc_tb[i].f_op->read = NULL;
+		file_desc_tb[i].f_op->write = NULL;
+		file_desc_tb[i].f_op->open = NULL;
+		file_desc_tb[i].f_op->close = NULL;
+		file_desc_tb[i].flag = 0;
+		file_desc_tb[i].file_position = 0;
+	}
+
+	return;
+}
+
 int32_t system_execute(const uint8_t * command) {
     uint8_t command_name[32] = {0};
     uint32_t args[128] = {0};
@@ -67,7 +87,7 @@ int32_t system_execute(const uint8_t * command) {
 }
 
 
-/*int32_t open(const uint8_t* filename)
+/*int32_t sys_open(const uint8_t* filename)
 * DESCRIPTION: Open systemcall that initializes the file descriptor table entry
 * INPUTS: uint8_t filename
 * OUTPUTS: -1 upon failure, 0 upon success
@@ -85,7 +105,7 @@ int32_t sys_open (const uint8_t* filename){
      if (file_type == 0){
           //set the f_op fields to RTC
     
-          for (i=2; i<8; i++){
+          for (i=2; i<8; i++){ //for the length of the file array, excluding stdin/stdout
                if(file_desc_tb[i].flag == 0){  //if entry dne
                     found_open_fd=1;
                     file_desc_tb[i].f_op->read=rtc_read;
@@ -103,7 +123,7 @@ int32_t sys_open (const uint8_t* filename){
      }
      else if(file_type ==1){
           //set the f_op fields to directory
-          for (i=2; i<8; i++){
+          for (i=2; i<8; i++){ //for entire file array
                if(file_desc_tb[i].flag == 0){  //if entry dne
                     found_open_fd=1;
                     file_desc_tb[i].f_op->read=dir_read;
@@ -121,7 +141,7 @@ int32_t sys_open (const uint8_t* filename){
      }
      else if(file_type == 2){
           //set the f_op fields to regular file
-          for (i=2; i<8; i++){
+          for (i=2; i<8; i++){ //for entire file array
                if(file_desc_tb[i].flag == 0){  //if entry dne
                //HOW WOULD I WRITE TO TERMINAL??
                     found_open_fd=1;
@@ -138,7 +158,8 @@ int32_t sys_open (const uint8_t* filename){
           if(found_open_fd ==0){ //if table is full
                return -1;
           }
-
+		}
+		return 0;
 }
 
 int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes){
@@ -160,6 +181,7 @@ int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes){
           if(valid != -1){
             return nbytes;
           }
+		  return -1;
      }
      return -1;
 }
@@ -170,20 +192,24 @@ int32_t sys_read (int32_t fd, void* buf, int32_t nbytes){
           int32_t valid = (file_desc_tb[fd].f_op)->read(fd, buf, nbytes);
           if(valid != -1){
             file_desc_tb[fd].file_position += nbytes;
-            return nbytes;
+            return valid;
           }
+		  return -1;
      }
      return -1;
 }
 
 int32_t sys_close (int32_t fd){
     if(fd == 1 || fd == 0)
-        return 1;
+        return -1;
 
-    file_desc_tb[fd].f_op = idk;
+    file_desc_tb[fd].f_op->read = NULL;
+	file_desc_tb[fd].f_op->write = NULL;
+	file_desc_tb[fd].f_op->open = NULL;
+	file_desc_tb[fd].f_op->close = NULL;
     file_desc_tb[fd].inode = 0;
     file_desc_tb[fd].file_position = 0;
     file_desc_tb[fd].flag = 0; 
 
-    return -1;
+    return 0;
 }

@@ -45,6 +45,7 @@ struct fap
 	int32_t (*close)(int32_t);
 } __attribute__((packed));
 
+
 struct file_desc
 {
 	struct fap* f_op;	//jump table i.e. pointer to an array of functions
@@ -54,6 +55,8 @@ struct file_desc
 } __attribute__((packed));
 
 int32_t get_filetype(const uint8_t* fname);
+
+int32_t get_inode(const uint8_t* fname);
 
 int32_t read_dentry_by_name(const uint8_t* fname, struct dentry* dent);
 
