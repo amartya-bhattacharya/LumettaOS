@@ -31,7 +31,7 @@ rtc_handler_wrapper:
 eax_mem: .long 0x0
 
 syscall_wrapper:
-    pushal
+    pushal          #push all registers
     pushfl
     pushl %ebp
     pushl %edi
@@ -46,7 +46,7 @@ syscall_wrapper:
     iret
 
     invalid:
-    popl %ebx
+    popl %ebx       #pop all registers
     popl %ecx
     popl %edx
     popl %esi
@@ -54,7 +54,7 @@ syscall_wrapper:
     popl %ebp
     popfl
     popal
-    movl $-1, %eax
+    movl $-1, %eax  #move invalid value into eax
     ret
 
     sys_call_table:

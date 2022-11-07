@@ -5,6 +5,7 @@
 #include "terminal.h"
 #include "rtc.h"
 #include "filesystem.h"
+#include "syscall.h"
 
 #define PASS 1
 #define FAIL 0
@@ -297,6 +298,12 @@ int execute(){
 }
 
 int file_descriptor(){
+	// pcb_t * pcb = get_pcb();
+	// int i
+
+
+	// sys_open(cat);
+	
 	return PASS;
 }
 
