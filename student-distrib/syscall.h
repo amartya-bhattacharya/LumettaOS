@@ -35,6 +35,8 @@
 #define SYS_SET_HANDLER 9
 #define SYS_SIGRETURN 10
 
+// extern struct fap terminal_op_table;
+
 /* Struct for the PCB */
 typedef struct pcb_t {
     struct file_desc file_desc_tb[8];   // file descriptor array
@@ -50,13 +52,12 @@ extern pcb_t * curr_pcb[MAX_PROCESSES];
 
 /* Local functions */
 pcb_t * get_pcb();
-int32_t system_halt(uint8_t status);
-int32_t system_execute(const uint8_t * command);
+int32_t sys_halt(uint8_t status);
+int32_t sys_execute(const uint8_t * command);
 int32_t sys_open (const uint8_t* filename);
 int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes);
 int32_t sys_read (int32_t fd, void* buf, int32_t nbytes);
 int32_t sys_close (int32_t fd);
-struct file_desc file_desc_tb[8];
 
 /* Wrapper function for syscall handler */
 void syscall_wrapper();

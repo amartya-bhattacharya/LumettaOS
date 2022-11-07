@@ -160,7 +160,7 @@ void entry(unsigned long magic, unsigned long addr) {
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     //clear();
-    system_execute((uint8_t*)"ls");
+    // system_execute((uint8_t*)"ls");
     printf("Enabling Interrupts\n");
     sti();
     
