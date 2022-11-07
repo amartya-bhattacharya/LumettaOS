@@ -6,6 +6,7 @@
 #include "lib.h"
 #include "filesystem.h"
 #include "paging.h"
+#include "x86_desc.h"
 #include "rtc.h"
 
 
@@ -19,13 +20,63 @@ pcb_t* curr_pcb[MAX_PROCESSES] = {(pcb_t*)(_8MB - 2 * _8KB),
 								  (pcb_t*)(_8MB - 7 * _8KB)};  // array of pointers to pcb's
 
 /* Local functions */
+pcb_t * get_pcb() {
+    pcb_t * pcb;
+    asm volatile(
+        "movl %%esp, %%eax;"
+        "andl $0x7FFFF, %%eax;"     // mask out the top 9 bits
+        "movl %%eax, %0;"
+        :"=r"(pcb)
+        :
+        :"%eax"
+    );
+    return pcb;
+}
+
+
+/* System call functions */
+int32_t system_halt(uint8_t status) {
+    pcb_t * pcb = get_pcb();
+    if (pcb->pid < 3) { // don't halt the shell or the init process
+        return 0;
+    }
+    
+    // close all files
+    int i;
+    for (i = 0; i < MAX_FILES; i++) curr_pcb[pcb->pid] -> file_desc_tb[0].flag = 0;
+    // TODO set the process to inactive
+
+    // restore parent's esp and ebp     // TODO check the asm error here: "register 'bp' has a fixed purpose and may not be clobbered in an asm statement"
+    asm volatile(
+        "movl %0, %%esp;"
+        "movl %1, %%ebp;"
+        :
+        :"r"(pcb->saved_esp), "r"(pcb->saved_ebp)
+        :"%esp", "%ebp"
+    );
+
+    // restore parent's paging      // TODO: check if this is correct. math was done in a hurry
+    uint32_t parent_pid = pcb->parent_pid;
+    uint32_t parent_pde = _8MB - (parent_pid + 1) * _4MB;
+    uint32_t parent_pte = _8MB - (parent_pid + 1) * _4KB;
+    uint32_t parent_page = _8MB - (parent_pid + 1) * _4KB;
+    uint32_t parent_page_dir = _8MB - (parent_pid + 1) * _4KB;
+    uint32_t parent_page_table = _8MB - (parent_pid + 1) * _4KB;
+
+    // TODO flush tlb
+    // TODO reset tss
+    // TODO jump to end of execute asm code (need to add the label); TODO add a leave and ret to the end
+    return status;  // TODO check if this is correct, or if we need to return 0/-1
+}
+
+
 int32_t system_execute(const uint8_t * command) {
-    uint8_t command_name[32] = {0};
+    uint8_t command_name[32] = {0};     // first word of the command
     uint32_t args[128] = {0};
     int8_t exe[40] = {0};  // header occupies first 40 bytes of the file
     struct dentry command_dentry;
     uint32_t command_inode;
-    void * entry_point;
+    void * entry_point;                 // entry point of the executable
 	union dirEntry d;
 
     // copy command into a buffer until /0 or /n is reached
@@ -70,15 +121,53 @@ int32_t system_execute(const uint8_t * command) {
 
 	// find first active pcb
 	int pcb_index = 0;
-	while (pcb_index < MAX_PROCESSES && !curr_pcb[pcb_index]->active) pcb_index++;
+	while (pcb_index < MAX_PROCESSES && curr_pcb[pcb_index]->active) pcb_index++;
 	if (pcb_index == MAX_PROCESSES) return -1;  // no available pcb's
+
+    // put arguments in pcb
+    strcpy(curr_pcb[pcb_index]->args, args);    // TODO might need to typecast to (int8_t *)
 
     // load in data
 	read_data(command_inode, 0, (uint8_t *)(_128MB + PROC_OFFSET), KERNEL_STACK_BOTTOM);	// results in page fault for now, need to set up paging 
 
-    // tss.esp0 = kernel stack pointer
-
     // set up and load pcb (setup fd[0] and fd[1])
+    curr_pcb[pcb_index]->pid = pcb_index;
+    curr_pcb[pcb_index]->active = 1;
+    curr_pcb[pcb_index]->parent_pid = curr_pcb[pcb_index]->pid;     // might need to change this to a pointer to the parent pcb
+
+    curr_pcb[pcb_index]->file_desc_tb[0].flag = 1;  // TODO stdin
+    curr_pcb[pcb_index]->file_desc_tb[1].flag = 1;  // TODO stdout
+    for (i = 2; i < MAX_PROCESSES; i++) {
+        curr_pcb[pcb_index]->file_desc_tb[i].flag = 0;
+    }
+
+    // TODO check if this is correct/needed
+    // asm volatile(
+    //     "movl %esp, %eax;"
+    //     "movl %ebp, %ebx;"
+    //     : "=a" (curr_pcb[pcb_index]->saved_esp), "=b" (curr_pcb[pcb_index]->saved_ebp)
+    // );
+
+    // set up tss
+    tss.ss0 = KERNEL_DS;
+    tss.esp0 = _8MB - (pcb_index + 1) * _8KB - 4;
+
+    // context switch
+    asm volatile(
+        "pushl %0;"     // push kernel ds
+        "pushl %1;"     // push esp
+        "pushfl;"       // push eflags
+        "popl %eax;"    // pop eflags
+        "orl $0x200, %eax;"     // set IF bit
+        "pushl %eax;"   // push back
+        "pushl %2;"     // push cs
+        "pushl %3;"     // push eip
+        "iret;"
+        :
+        : "r" (KERNEL_DS), "r" (curr_pcb[pcb_index]->saved_esp), "r" (USER_CS), "r" (entry_point)
+        : "eax"
+    );
+
     return 0;
 }
 
