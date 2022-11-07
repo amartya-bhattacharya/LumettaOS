@@ -59,10 +59,10 @@ syscall_wrapper:
 
     sys_call_table:
     # .long halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn
-    .long system_execute, sys_read, sys_write, sys_open, sys_close
+    .long sys_halt, sys_execute, sys_read, sys_write, sys_open, sys_close
 
     // execute:
-    // call system_execute
+    // call sys_execute
 
     // read:
     // call sys_read
