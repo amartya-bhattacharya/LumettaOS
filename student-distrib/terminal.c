@@ -94,7 +94,7 @@ int32_t terminal_open(const uint8_t* filename) {
 int32_t terminal_close(int32_t fd) {
     return 0;
 }
-+
+
 int32_t terminal_open_fail(const uint8_t* filename){ //stdin and stdout
     return -1;
 }

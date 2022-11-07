@@ -6,6 +6,7 @@
 #define _SYSCALL_H
 
 #include "types.h"
+#include "filesystem.h"
 
 /* Page directory and page table constants */
 #define PAGE_DIR_SIZE 1024
@@ -26,7 +27,7 @@ int32_t sys_open (const uint8_t* filename);
 int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes);
 int32_t sys_read (int32_t fd, void* buf, int32_t nbytes);
 int32_t sys_close (int32_t fd);
-extern struct file_desc file_desc_tb[8];
+struct file_desc file_desc_tb[8];
 
 /* Wrapper function for syscall handler */
 void syscall_wrapper();

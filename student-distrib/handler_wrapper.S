@@ -41,7 +41,7 @@ syscall_wrapper:
     pushl %ebx
     cmpl $4, %eax
     ja invalid
-    call *sys_call_table(0, %eax, 4)
+    call *sys_call_table(, %eax, 4)
     movl %eax, eax_mem
     iret
 
@@ -58,7 +58,23 @@ syscall_wrapper:
     ret
 
     sys_call_table:
-    .long halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn
+    # .long halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn
+    .long system_execute, sys_read, sys_write, sys_open, sys_close
+
+    // execute:
+    // call system_execute
+
+    // read:
+    // call sys_read
+
+    // write:
+    // call sys_write
+
+    // open:
+    // call sys_open
+    
+    // close:
+    // call sys_close
 
 
 
@@ -86,3 +102,7 @@ syscall_wrapper:
     //         ret
     // getIP: movl (%esp), %eax
     //         ret
+
+
+
+
