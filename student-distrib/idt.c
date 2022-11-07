@@ -44,7 +44,7 @@ void idt_init(){
     exceptions[19] = XF;
     exceptions[33] = keyboard_handler_wrapper;          /* Initialize keyboard handler */
     exceptions[40] = rtc_handler_wrapper;               /* Initialize RTC handler */
-    exceptions[128] = syscall_wrapper;                  
+    exceptions[128] = syscall_wrapper;                  /* Initialize system call handler */
 
     for(j = 0; j < 256; j++){                           /* Initialize the IDT */
         idt[j].seg_selector = KERNEL_CS;
