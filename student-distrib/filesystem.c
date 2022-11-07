@@ -47,6 +47,17 @@ int32_t get_inode(const uint8_t* fname){
 	return -1;
 }
 
+int32_t get_inode(const uint8_t* fname){
+	int i;
+	for(i = 0;i < boot->nent;i++)	//iterate through dentries
+	{
+		if(strncmp((int8_t*)fname, (int8_t*)(boot->dirs[i].name), 32) == 0)	//maximum size of a filename 
+		{
+			return boot->dirs[i].ind;
+		}
+	}
+	return -1;
+}
 /*
  * Changes dent to be that of corresponding filename
  * Inputs: filename, dentry
@@ -161,7 +172,7 @@ int32_t dir_read(int32_t fd, void* buf, int32_t n)
 			break;
 		}
 	}
-	return n;
+	return 0;
 }
 
 /*

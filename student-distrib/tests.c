@@ -288,6 +288,7 @@ int check_bad_input_2(){
 }
 
 int r_w_syscalls(){
+	
 	return PASS;
 }
 
