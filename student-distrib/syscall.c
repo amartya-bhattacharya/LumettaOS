@@ -10,7 +10,7 @@
 #include "rtc.h"
 #include "terminal.h"
 
-struct fap fap_func_arr[3] ;
+struct fap fap_func_arr[3]; //array of file array pointers to functions, static table
 
 
 /* defines the file descriptor array, only to check 
@@ -18,7 +18,7 @@ compile errors for sys calls, comment out later once
 PCB is implemented*/
 void set_fda(){ 
 	unsigned i;
-	for(i = 0; i < 8; i++){
+	for(i = 0; i < 8; i++){ //each task can have 8 files
 		file_desc_tb[i].f_op->read = NULL;
 		file_desc_tb[i].f_op->write = NULL;
 		file_desc_tb[i].f_op->open = NULL;
@@ -41,6 +41,13 @@ pcb_t* curr_pcb[MAX_PROCESSES] = {(pcb_t*)(_8MB - 2 * _8KB),
 
 
 /* Local functions */
+
+/*
+ * get_PCB
+ * DESCRIPTION: initializes PCB
+ * INPUTS: NONE
+ * OUTPUTS: intialized PCB  
+ */
 pcb_t * get_pcb() {
     pcb_t * pcb;
     asm volatile(
@@ -56,6 +63,13 @@ pcb_t * get_pcb() {
 
 
 /* System call functions */
+
+/*
+ * system_halt
+ * DESCRIPTION: terminates process as well as returns specified value to its parent process
+ * INPUTS: status
+ * OUTPUTS: status 
+ */
 int32_t system_halt(uint8_t status) {
     pcb_t * pcb = get_pcb();
     if (pcb->pid < 3) { // don't halt the shell or the init process
@@ -68,21 +82,21 @@ int32_t system_halt(uint8_t status) {
     // TODO set the process to inactive
 
     // restore parent's esp and ebp     // TODO check the asm error here: "register 'bp' has a fixed purpose and may not be clobbered in an asm statement"
-    asm volatile(
-        "movl %0, %%esp;"
-        "movl %1, %%ebp;"
-        :
-        :"=r"(pcb->saved_esp), "=r"(pcb->saved_ebp)
-        :"%esp", "%ebp"
-    );
+    // asm volatile(
+    //     "movl %0, %%esp;"
+    //     "movl %1, %%ebp;"
+    //     :
+    //     :"=r"(pcb->saved_esp), "=r"(pcb->saved_ebp)
+    //     :"%esp", "%ebp"
+    // );
 
     // restore parent's paging      // TODO: check if this is correct. math was done in a hurry
     uint32_t parent_pid = pcb->parent_pid;
-    uint32_t parent_pde = _8MB - (parent_pid + 1) * _4MB;
-    uint32_t parent_pte = _8MB - (parent_pid + 1) * _4KB;
-    uint32_t parent_page = _8MB - (parent_pid + 1) * _4KB;
-    uint32_t parent_page_dir = _8MB - (parent_pid + 1) * _4KB;
-    uint32_t parent_page_table = _8MB - (parent_pid + 1) * _4KB;
+    // uint32_t parent_pde = _8MB - (parent_pid + 1) * _4MB;
+    // uint32_t parent_pte = _8MB - (parent_pid + 1) * _4KB;
+    // uint32_t parent_page = _8MB - (parent_pid + 1) * _4KB;
+    // uint32_t parent_page_dir = _8MB - (parent_pid + 1) * _4KB;
+    // uint32_t parent_page_table = _8MB - (parent_pid + 1) * _4KB;
 
     // TODO flush tlb
     flushTLB();
@@ -93,9 +107,16 @@ int32_t system_halt(uint8_t status) {
     // TODO jump to end of execute asm code (need to add the label); TODO add a leave and ret to the end
     return status;  // TODO check if this is correct, or if we need to return 0/-1
 }
+
+/*
+ * system_execute
+ * DESCRIPTION: loads and executes a new program
+ * INPUTS: command (space separated squence of words)
+ * OUTPUTS: returns 0 if successful, returns -1 if program isn't executable
+ */
 int32_t system_execute(const uint8_t * command) {
     uint8_t command_name[32] = {0};     // first word of the command
-    uint32_t args[128] = {0};
+    uint32_t args[128] = {0}; //
     int8_t exe[40] = {0};  // header occupies first 40 bytes of the file
     struct dentry command_dentry;
     uint32_t command_inode;
@@ -104,7 +125,7 @@ int32_t system_execute(const uint8_t * command) {
 
     // copy command into a buffer until /0 or /n is reached
     int i = 0;
-    while (command[i] != '\n' && command[i] != ' ' && i < 32) {
+    while (command[i] != '\n' && command[i] != ' ' && i < 32) {    //only want first word
         command_name[i] = command[i];
         i++;
     }
@@ -143,12 +164,12 @@ int32_t system_execute(const uint8_t * command) {
 
     // set up paging for the program (flush TLB)	// TODO @Vasilis
 	d.val = 3;		//sets P and RW bits
-	d.whole.add_22_31 = (_8MB + _4MB * pcb_index) >> 22;
+	d.whole.add_22_31 = (_8MB + _4MB * pcb_index) >> 22; 
 	chgDir(32, d);	//32 = 128 / 4 (all programs are in the 128-132 MiB vmem page
 	flushTLB();
 
     // put arguments in pcb
-    strcpy(curr_pcb[pcb_index]->args, args);    // TODO might need to typecast to (int8_t *)
+    strcpy((int8_t *)curr_pcb[pcb_index]->args, (int8_t *) args);    // TODO might need to typecast to (int8_t *)
 
     // load in data
 	read_data(command_inode, 0, (uint8_t *)(_128MB + PROC_OFFSET), KERNEL_STACK_BOTTOM);	// results in page fault for now, need to set up paging 
@@ -176,20 +197,20 @@ int32_t system_execute(const uint8_t * command) {
     tss.esp0 = _8MB - (pcb_index + 1) * _8KB - 4;
 
     // context switch
-    asm volatile(
-        "pushl %0;"     // push kernel ds
-        "pushl %1;"     // push esp
-        "pushfl;"       // push eflags
-        "popl %eax;"    // pop eflags
-        "orl $0x200, %eax;"     // set IF bit
-        "pushl %eax;"   // push back
-        "pushl %2;"     // push cs
-        "pushl %3;"     // push eip
-        "iret;"
-        :
-        : "r" (KERNEL_DS), "r" (curr_pcb[pcb_index]->saved_esp), "r" (USER_CS), "r" (entry_point)
-        : "eax"
-    );
+    // asm volatile(
+    //     "pushl %0;"     // push kernel ds
+    //     "pushl %1;"     // push esp
+    //     "pushfl;"       // push eflags
+    //     "popl %eax;"    // pop eflags
+    //     "orl $0x200, %eax;"     // set IF bit
+    //     "pushl %eax;"   // push back
+    //     "pushl %2;"     // push cs
+    //     "pushl %3;"     // push eip
+    //     "iret;"
+    //     :
+    //     : "r" (KERNEL_DS), "r" (curr_pcb[pcb_index]->saved_esp), "r" (USER_CS), "r" (entry_point)
+    //     : "eax"
+    // );
 
     return 0;
 }
@@ -269,6 +290,12 @@ int32_t sys_open (const uint8_t* filename){
 		return 0;
 }
 
+/*
+ * sys_write
+ * DESCRIPTION: writes data to the terminal or to a device (RTC)
+ * INPUTS: file descriptor, buffer, number of bytes
+ * OUTPUTS: returns number of bytes written , returns -1 if its invalid 
+ */
 int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes){
     /*
     * TODO: make assembly file with jmp table to jump to these c 
@@ -283,7 +310,7 @@ int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes){
           
      // }
 
-     if(fd > 1){
+     if(fd > 1){ //make sure file descriptor isn't stdin/stdout
           int32_t valid = (file_desc_tb[fd].f_op)->write(fd, buf, nbytes);
           if(valid != -1){
             return nbytes;
@@ -293,12 +320,20 @@ int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes){
      return -1;
 }
 
+/*
+ * sys_read
+ * DESCRIPTION: reads data from the keyboard, a file, device (RTC), or directory
+ *              calls upon specific read funciton based on file descriptor (fd)
+ * INPUTS: file descriptor, buffer, number of bytes
+ * OUTPUTS: returns number of bytes read and updates file position, returns -1
+ *          if its invalid 
+ */
 int32_t sys_read (int32_t fd, void* buf, int32_t nbytes){
      
-     if(fd > 1){
+     if(fd > 1){ //make sure file descriptor isn't stdin/stdout
           int32_t valid = (file_desc_tb[fd].f_op)->read(fd, buf, nbytes);
           if(valid != -1){
-            file_desc_tb[fd].file_position += nbytes;
+            file_desc_tb[fd].file_position += nbytes; //updates file position
             return valid;
           }
 		  return -1;
@@ -306,6 +341,12 @@ int32_t sys_read (int32_t fd, void* buf, int32_t nbytes){
      return -1;
 }
 
+/*
+ * sys_close
+ * DESCRIPTION: closes and makes specific file descriptor available 
+ * INPUTS: the file descriptor
+ * OUTPUTS: sets all elements in file descriptor to uninitialized valuesand  returns 0
+ */
 int32_t sys_close (int32_t fd){
     if(fd == 1 || fd == 0)
         return -1;

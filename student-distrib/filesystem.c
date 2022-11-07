@@ -23,6 +23,12 @@ static uint32_t dnum;
 
 //static union tblEntry fstable[1024] __attribute__((aligned(4096)));
 
+/*
+ * get_filetype
+ * DESCRIPTION: helper function that gets the file type for sys_open
+ * INPUTS: fname (file name)
+ * OUTPUTS: returns file type, returns -1 if invalid  
+ */
 int32_t get_filetype(const uint8_t* fname){
 	int i;
 	for(i = 0;i < boot->nent;i++)	//iterate through dentries
@@ -35,6 +41,12 @@ int32_t get_filetype(const uint8_t* fname){
 	return -1;
 }
 
+/*
+ * get inode
+ * DESCRIPTION: helper function that gets the inode for sys_open
+ * INPUTS: fname (file name)
+ * OUTPUTS: returns inode, returns -1 if invalid  
+ */
 int32_t get_inode(const uint8_t* fname){
 	int i;
 	for(i = 0;i < boot->nent;i++)	//iterate through dentries
@@ -47,17 +59,6 @@ int32_t get_inode(const uint8_t* fname){
 	return -1;
 }
 
-int32_t get_inode(const uint8_t* fname){
-	int i;
-	for(i = 0;i < boot->nent;i++)	//iterate through dentries
-	{
-		if(strncmp((int8_t*)fname, (int8_t*)(boot->dirs[i].name), 32) == 0)	//maximum size of a filename 
-		{
-			return boot->dirs[i].ind;
-		}
-	}
-	return -1;
-}
 /*
  * Changes dent to be that of corresponding filename
  * Inputs: filename, dentry
@@ -123,11 +124,17 @@ int32_t read_data(uint32_t nd, uint32_t off, uint8_t* buf, uint32_t len)
 	return len;
 }
 
+/*
+ * Does nothing
+ */
 int32_t dir_execute(const uint8_t* command)
 {
 	return -1;
 }
 
+/*
+ * Does nothing
+ */
 int32_t dir_halt(uint8_t status)
 {
 	return -1;
@@ -255,11 +262,17 @@ int32_t file_close(int32_t fd)
 	return 0;
 }
 
+/*
+ * Does nothing
+ */
 int32_t file_execute(const uint8_t* command)
 {
 	return -1;
 }
 
+/*
+ * Does nothing
+ */
 int32_t file_halt (uint8_t status)
 {
 	return -1;
