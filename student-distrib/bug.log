@@ -123,10 +123,23 @@ Solution:
                           BUG 10                          
 <--------------------------------------------------------->
 Time:
-    2022.10.?24.
+    2022.11.05.
 Creator:
-    Amartya
+    Amartya Bhattacharya
 Description:
-    
+    not using static tables for file descriptor
 Solution:
-    ....
+    implement static tables for all the calls
+    
+<--------------------------------------------------------->
+                          BUG 11                          
+<--------------------------------------------------------->
+Time:
+    2022.11.??.
+Creator:
+    
+Description:
+
+Solution:
+    
+
