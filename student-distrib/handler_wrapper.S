@@ -25,6 +25,21 @@ rtc_handler_wrapper:
     popal
     iret
 
+# wrapper for page fault handler
+.globl pf_handler_wrapper
+.align 4
+pf_handler_wrapper:
+
+    pushal
+    pushfl
+    pushl 8(%esp)
+    call PF 
+    addl $4, %esp;
+    popfl
+    popal
+    iret
+
+
 # wrapper for systemcall interrupt handler
 .globl syscall_wrapper
 .align 4
