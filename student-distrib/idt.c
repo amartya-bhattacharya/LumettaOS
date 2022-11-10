@@ -8,6 +8,7 @@
 #include "keyboard.h"
 #include "rtc.h"
 #include "syscall.h"
+#include "paging.h"
 
 
 /* Initialize the IDT
@@ -36,7 +37,7 @@ void idt_init(){
     exceptions[11] = NP;
     exceptions[12] = SS;
     exceptions[13] = GP;
-    exceptions[14] = PF;
+    exceptions[14] = pf_handler_wrapper;
     exceptions[15] = R;
     exceptions[16] = MF;
     exceptions[17] = AC;
@@ -189,9 +190,9 @@ void GP()
 }
 
 
-void PF()
+void PF(int32_t arg)
 {
-    printf("Page Fault");
+    printf("Page Fault exception code is %d", arg);
     while(1){}
     return;
 }

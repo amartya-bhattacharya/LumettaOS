@@ -116,4 +116,6 @@ void chgDir(uint32_t idx, union dirEntry e);
 /* overwrites %cr3 (with same value it had before) to flush the TLB */
 void flushTLB();
 
+extern void pf_handler_wrapper();
+
 #endif /* _PAGING_H */
