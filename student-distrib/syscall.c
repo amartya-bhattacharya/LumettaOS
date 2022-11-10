@@ -75,6 +75,7 @@ void set_fda(){
  * OUTPUTS: status 
  */
 int32_t sys_halt(uint8_t status) {
+    union dirEntry d;
     pcb_t * pcb = get_pcb();
 
     if (pcb->pid < 3) { // don't halt the shell or the init process
@@ -97,7 +98,7 @@ int32_t sys_halt(uint8_t status) {
 
     // restore parent's paging      // TODO: check if this is correct. math was done in a hurry
     uint32_t parent_pid = pcb->parent_pid;
-    d.val = 3;		//sets P and RW bits
+    d.val = 7;		//sets P and RW bits
 	d.whole.add_22_31 = (_8MB + _4MB * parent_pid) >> 22;
 	chgDir(32, d);	//32 = 128 / 4 (all programs are in the 128-132 MiB vmem page
     flushTLB();
@@ -170,7 +171,7 @@ int32_t sys_execute(const uint8_t * command) {
     if (strncmp(exe, check_exe, 4))
         return -1; // not an executable
     
-    entry_point = (void *)(exe[24] + (exe[25] << 8) + (exe[26] << 16) + (exe[27] << 24));
+    entry_point = (void *)(((uint32_t)(exe[24])) + (((uint32_t)(exe[25])) << 8) + (((uint32_t)(exe[26])) << 16) + (((uint32_t)(exe[27])) << 24));
     
     // find first active pcb
 	int pcb_index = 0;
@@ -178,16 +179,17 @@ int32_t sys_execute(const uint8_t * command) {
 	if (pcb_index == MAX_PROCESSES) return -1;  // no available pcb's
 
     // set up paging for the program (flush TLB)
-	d.val = 3;		//sets P and RW bits
+	d.val = 7;		//sets P, RW, and US bits 0b111
+    d.whole.ps = 1;
 	d.whole.add_22_31 = (_8MB + _4MB * pcb_index) >> 22; 
-	chgDir(32, d);	//32 = 128 / 4 (all programs are in the 128-132 MiB vmem page
-	flushTLB();
+	chgDir(32, d);	//32 = 128 / 4 (all programs are in the 128-132 MiB vmem page)
+	//flushTLB();
 
     // put arguments in pcb
     strcpy((int8_t *)curr_pcb[pcb_index]->args, (const int8_t *)args);
 
     // load in data
-	read_data(command_inode, 0, (uint8_t *)(_128MB + PROC_OFFSET), KERNEL_STACK_BOTTOM);	// results in page fault for now, need to set up paging 
+	read_data(command_inode, 0, (uint8_t *)(_128MB + PROC_OFFSET), KERNEL_STACK_BOTTOM);
 
     // set up and load pcb (setup fd[0] and fd[1])
     curr_pcb[pcb_index]->pid = pcb_index;

@@ -293,10 +293,6 @@ int r_w_syscalls(){
 	return PASS;
 }
 
-int execute(){
-	return PASS;
-}
-
 int file_descriptor(){
 	// pcb_t * pcb = get_pcb();
 	// int i
