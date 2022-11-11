@@ -73,7 +73,7 @@ void page_init()
 	vidTable.val = (unsigned)table | 3;		/* trick from OSdev, sets p and rw bits */
 	kernel.val = 0;
 	kernel.whole.p = 1;
-	kernel.whole.rw = 0;	//kernel can still write
+	kernel.whole.rw = 1;	//kernel can still write
 	kernel.whole.ps = 1;
 	kernel.whole.g = 1;
 	kernel.whole.add_22_31 = 0x1;	/* 0x400000 is 4mb kernel.val |= 0x400000 also works */
@@ -89,6 +89,20 @@ void page_init()
 	spawnDir();
 	pageDir[0] = vidTable;
 	pageDir[1] = kernel;
+
+	//setup pages so kernel can access process memory at all times
+	kernel.whole.add_22_31 = 0x2;
+	pageDir[2] = kernel;
+	kernel.whole.add_22_31 = 0x3;
+	pageDir[3] = kernel;
+	kernel.whole.add_22_31 = 0x4;
+	pageDir[4] = kernel;
+	kernel.whole.add_22_31 = 0x5;
+	pageDir[5] = kernel;
+	kernel.whole.add_22_31 = 0x6;
+	pageDir[6] = kernel;
+	kernel.whole.add_22_31 = 0x7;
+	pageDir[7] = kernel;
 	pageEnable();
 	return;
 }
@@ -106,7 +120,7 @@ void chgDir(uint32_t idx, union dirEntry e)
 
 void flushTLB()
 {
-	asm(	"movl $pageDir, %eax\n\t"
+	asm(	"movl %cr3, %eax\n\t"
 		"movl %eax, %cr3\n\t");		//moves pagedir pointer into cr3 which causes flush
 	return;
 }
