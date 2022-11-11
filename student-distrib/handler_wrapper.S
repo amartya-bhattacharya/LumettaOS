@@ -30,11 +30,11 @@ rtc_handler_wrapper:
 .align 4
 pf_handler_wrapper:
 
-    pushal
-    pushfl
+    pushal  #4 bytes * 8 registers
+    pushfl  #4 bytes
     movl %cr2, %eax
-    pushl %eax
-    pushl 8(%esp)
+    pushl %eax  #4 bytes
+    pushl 40(%esp)
     call PF 
     addl $4, %esp;
     popfl

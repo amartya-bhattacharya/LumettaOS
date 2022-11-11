@@ -195,7 +195,7 @@ int32_t sys_execute(const uint8_t * command) {
     curr_pcb[pcb_index]->pid = pcb_index;
     curr_pcb[pcb_index]->active = 1;
     curr_pcb[pcb_index]->parent_pid = curr_pcb[pcb_index]->pid;     // might need to change this to a pointer to the parent pcb
-
+    curr_pcb[pcb_index]->saved_esp = _8MB - 1;
     curr_pcb[pcb_index]->file_desc_tb[0].flag = 1;
     curr_pcb[pcb_index]->file_desc_tb[0].f_op = &terminal_op_table;
     curr_pcb[pcb_index]->file_desc_tb[1].flag = 1;
@@ -211,11 +211,11 @@ int32_t sys_execute(const uint8_t * command) {
         : "=a" (curr_pcb[pcb_index]->saved_esp), "=b" (curr_pcb[pcb_index]->saved_ebp)
     );
     // 0x083FFFFC
-    uint32_t user_sp = 
+    uint32_t user_sp = 0x083FFFFC;
 
     // set up tss
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = _8MB - (pcb_index + 1) * _8KB - 4;
+    tss.esp0 = _8MB - (pcb_index + 1) * _8KB;
 
     // context switch
     asm volatile(
