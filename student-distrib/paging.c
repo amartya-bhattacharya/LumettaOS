@@ -89,20 +89,6 @@ void page_init()
 	spawnDir();
 	pageDir[0] = vidTable;
 	pageDir[1] = kernel;
-
-	//setup pages so kernel can access process memory at all times
-	kernel.whole.add_22_31 = 0x2;
-	pageDir[2] = kernel;
-	kernel.whole.add_22_31 = 0x3;
-	pageDir[3] = kernel;
-	kernel.whole.add_22_31 = 0x4;
-	pageDir[4] = kernel;
-	kernel.whole.add_22_31 = 0x5;
-	pageDir[5] = kernel;
-	kernel.whole.add_22_31 = 0x6;
-	pageDir[6] = kernel;
-	kernel.whole.add_22_31 = 0x7;
-	pageDir[7] = kernel;
 	pageEnable();
 	return;
 }

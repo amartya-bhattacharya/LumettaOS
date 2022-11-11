@@ -192,7 +192,7 @@ void GP()
 
 void PF(int32_t arg)
 {
-    printf("Page Fault exception code is %d", arg);
+    printf("\nPage Fault exception code is %d\n", arg);
     while(1){}
     return;
 }
