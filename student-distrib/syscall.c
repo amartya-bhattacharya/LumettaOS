@@ -14,12 +14,12 @@
 /* Local variables */
 struct fap fap_func_arr[3];
 int8_t check_exe[4] = {0x7f, 0x45, 0x4c, 0x46};  // first 4 bytes identifying an executable
-pcb_t* curr_pcb[MAX_PROCESSES] = {(pcb_t*)(_8MB - 2 * _8KB),
+pcb_t* curr_pcb[MAX_PROCESSES] = {(pcb_t*)(_8MB - _8KB),
+								  (pcb_t*)(_8MB - 2 * _8KB),
 								  (pcb_t*)(_8MB - 3 * _8KB),
 								  (pcb_t*)(_8MB - 4 * _8KB),
 								  (pcb_t*)(_8MB - 5 * _8KB),
-								  (pcb_t*)(_8MB - 6 * _8KB),
-								  (pcb_t*)(_8MB - 7 * _8KB)};  // array of pointers to pcb's
+								  (pcb_t*)(_8MB - 6 * _8KB)};  // array of pointers to pcb's
 struct fap terminal_op_table = {terminal_read, terminal_write, terminal_open, terminal_close};
 struct fap rtc_op_table = {rtc_read, rtc_write, rtc_open, rtc_close};
 struct fap dir_op_table = {dir_read, dir_write, dir_open, dir_close};
@@ -77,7 +77,6 @@ void set_fda(){
 int32_t sys_halt(uint8_t status) {
     union dirEntry d;
     pcb_t * pcb = get_pcb();
-    union dirEntry d;
 
     if (pcb->pid < 3) { // don't halt the shell or the init process
         return 0;
