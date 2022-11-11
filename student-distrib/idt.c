@@ -23,26 +23,26 @@ void idt_init(){
     }
 
     /* Initialize the exception handlers */
-    exceptions[0] = DE;
-    exceptions[1] = DB;
-    exceptions[2] = NMI;
-    exceptions[3] = BP;
-    exceptions[4] = OF;
-    exceptions[5] = BR;
-    exceptions[6] = UD;
-    exceptions[7] = NM;
-    exceptions[8] = DF;
-    exceptions[9] = CSO;
-    exceptions[10] = TS;
-    exceptions[11] = NP;
-    exceptions[12] = SS;
-    exceptions[13] = GP;
+    exceptions[0] = de_handler_wrapper;
+    exceptions[1] = db_handler_wrapper;
+    exceptions[2] = nmi_handler_wrapper;
+    exceptions[3] = bp_handler_wrapper;
+    exceptions[4] = of_handler_wrapper;
+    exceptions[5] = br_handler_wrapper;
+    exceptions[6] = ud_handler_wrapper;
+    exceptions[7] = nm_handler_wrapper;
+    exceptions[8] = df_handler_wrapper;
+    exceptions[9] = cso_handler_wrapper;
+    exceptions[10] = ts_handler_wrapper;
+    exceptions[11] = np_handler_wrapper;
+    exceptions[12] = ss_handler_wrapper;
+    exceptions[13] = gp_handler_wrapper;
     exceptions[14] = pf_handler_wrapper;
-    exceptions[15] = R;
-    exceptions[16] = MF;
-    exceptions[17] = AC;
-    exceptions[18] = MC;
-    exceptions[19] = XF;
+    exceptions[15] = r_handler_wrapper;
+    exceptions[16] = mf_handler_wrapper;
+    exceptions[17] = ac_handler_wrapper;
+    exceptions[18] = mc_handler_wrapper;
+    exceptions[19] = xf_handler_wrapper;
     exceptions[33] = keyboard_handler_wrapper;          /* Initialize keyboard handler */
     exceptions[40] = rtc_handler_wrapper;               /* Initialize RTC handler */
     exceptions[128] = syscall_wrapper;                  /* Initialize system call handler */
