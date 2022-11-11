@@ -32,6 +32,8 @@ pf_handler_wrapper:
 
     pushal
     pushfl
+    movl %cr2, %eax
+    pushl %eax
     pushl 8(%esp)
     call PF 
     addl $4, %esp;

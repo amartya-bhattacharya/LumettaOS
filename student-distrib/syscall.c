@@ -222,9 +222,9 @@ int32_t sys_execute(const uint8_t * command) {
         "pushl %0;"     // push kernel ds
         "pushl %1;"     // push esp
         "pushfl;"       // push eflags
-        "popl %%eax;"    // pop eflags
-        "orl $0x200, %%eax;"     // set IF bit
-        "pushl %%eax;"   // push back
+        // "popl %%eax;"    // pop eflags
+        "orl $0x200, (%%esp);"     // set IF bit
+        // "pushl %%eax;"   // push back
         "pushl %2;"     // push cs
         "pushl %3;"     // push eip
         "iret;"
