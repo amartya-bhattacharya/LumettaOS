@@ -192,7 +192,7 @@ void GP()
 
 void PF(int32_t arg, void* addr)
 {
-    printf("\nPage Fault exception code is %d attempting to access %X\n", arg, (int)addr);
+    printf("\nPage Fault exception code is %d attempting to access %x\n", arg, (int)addr);
     while(1){}
     return;
 }
