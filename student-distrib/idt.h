@@ -9,6 +9,31 @@
 
 /* Initialize the IDT */
 extern void idt_init();
+extern void de_handler_wrapper();
+extern void db_handler_wrapper();
+extern void nmi_handler_wrapper();
+extern void bp_handler_wrapper();
+extern void of_handler_wrapper();
+extern void br_handler_wrapper();
+extern void ud_handler_wrapper();
+extern void nm_handler_wrapper();
+extern void df_handler_wrapper();
+extern void cso_handler_wrapper();
+extern void ts_handler_wrapper();
+extern void np_handler_wrapper();
+extern void ss_handler_wrapper();
+extern void gp_handler_wrapper();
+extern void pf_handler_wrapper();
+extern void r_handler_wrapper();
+extern void mf_handler_wrapper();
+extern void ac_handler_wrapper();
+extern void mc_handler_wrapper();
+extern void xf_handler_wrapper();
+
+
+
+
+
 /* Exception handlers */
 void Default_except();
 void DE();

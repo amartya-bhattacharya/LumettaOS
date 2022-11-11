@@ -39,6 +39,214 @@ pf_handler_wrapper:
     popal
     iret
 
+# wrapper for rtc interrupt handler
+.globl de_handler_wrapper
+.align 4
+de_handler_wrapper:
+    pushal
+    pushfl
+    call DE
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl db_handler_wrapper
+.align 4
+db_handler_wrapper:
+    pushal
+    pushfl
+    call DB
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl nmi_handler_wrapper
+.align 4
+nmi_handler_wrapper:
+    pushal
+    pushfl
+    call NMI
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl bp_handler_wrapper
+.align 4
+bp_handler_wrapper:
+    pushal
+    pushfl
+    call BP
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl of_handler_wrapper
+.align 4
+of_handler_wrapper:
+    pushal
+    pushfl
+    call OF
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl br_handler_wrapper
+.align 4
+br_handler_wrapper:
+    pushal
+    pushfl
+    call BR
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl ud_handler_wrapper
+.align 4
+ud_handler_wrapper:
+    pushal
+    pushfl
+    call UD
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl nm_handler_wrapper
+.align 4
+nm_handler_wrapper:
+    pushal
+    pushfl
+    call NM
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl df_handler_wrapper
+.align 4
+df_handler_wrapper:
+    pushal
+    pushfl
+    call DF
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl cso_handler_wrapper
+.align 4
+cso_handler_wrapper:
+    pushal
+    pushfl
+    call CSO
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl ts_handler_wrapper
+.align 4
+ts_handler_wrapper:
+    pushal
+    pushfl
+    call TS
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl np_handler_wrapper
+.align 4
+np_handler_wrapper:
+    pushal
+    pushfl
+    call NP
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl ss_handler_wrapper
+.align 4
+ss_handler_wrapper:
+    pushal
+    pushfl
+    call SS
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl gp_handler_wrapper
+.align 4
+gp_handler_wrapper:
+    pushal
+    pushfl
+    call GP
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl r_handler_wrapper
+.align 4
+r_handler_wrapper:
+    pushal
+    pushfl
+    call R
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl mf_handler_wrapper
+.align 4
+mf_handler_wrapper:
+    pushal
+    pushfl
+    call MF
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl ac_handler_wrapper
+.align 4
+ac_handler_wrapper:
+    pushal
+    pushfl
+    call AC
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl mc_handler_wrapper
+.align 4
+mc_handler_wrapper:
+    pushal
+    pushfl
+    call MC
+    popfl
+    popal
+    iret
+
+# wrapper for rtc interrupt handler
+.globl xf_handler_wrapper
+.align 4
+xf_handler_wrapper:
+    pushal
+    pushfl
+    call XF
+    popfl
+    popal
+    iret
 
 # wrapper for systemcall interrupt handler
 .globl syscall_wrapper
