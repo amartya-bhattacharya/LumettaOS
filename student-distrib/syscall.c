@@ -183,7 +183,7 @@ int32_t sys_execute(const uint8_t * command) {
     d.whole.ps = 1;
 	d.whole.add_22_31 = (_8MB + _4MB * pcb_index) >> 22; 
 	chgDir(32, d);	//32 = 128 / 4 (all programs are in the 128-132 MiB vmem page)
-	//flushTLB();
+	flushTLB();
 
     // put arguments in pcb
     strcpy((int8_t *)curr_pcb[pcb_index]->args, (const int8_t *)args);
