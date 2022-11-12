@@ -88,13 +88,13 @@ int32_t sys_halt(uint8_t status) {
     // TODO set the process to inactive
 
     // restore parent's esp and ebp     // TODO check the asm error here: "register 'bp' has a fixed purpose and may not be clobbered in an asm statement"
-    asm volatile(
+    /*asm volatile(
         "movl %0, %%esp;"
         "movl %1, %%ebp;"
         :
         :"r"(pcb->saved_esp), "r"(pcb->saved_ebp)
         :"%esp", "%ebp"
-    );
+    );*/
 
     // restore parent's paging      // TODO: check if this is correct. math was done in a hurry
     uint32_t parent_pid = pcb->parent_pid;
@@ -207,8 +207,8 @@ int32_t sys_execute(const uint8_t * command) {
     // TODO check if this is correct/needed
     asm volatile(
         "movl %%esp, %%eax;"
-        "movl %%ebp, %%ebx;"
-        : "=a" (curr_pcb[pcb_index]->saved_esp), "=b" (curr_pcb[pcb_index]->saved_ebp)
+        "movl %%ebp, %%ecx;"
+        : "=a" (curr_pcb[pcb_index]->saved_esp), "=c" (curr_pcb[pcb_index]->saved_ebp)
     );
     // 0x083FFFFC
     uint32_t user_sp = 0x083FFFFC;
@@ -216,6 +216,10 @@ int32_t sys_execute(const uint8_t * command) {
     // set up tss
     tss.ss0 = KERNEL_DS;
     tss.esp0 = _8MB - (pcb_index + 1) * _8KB;
+	asm volatile(
+		"movl %%cr3, %0;"
+		: "=r" (tss.cr3)
+	);
 
     // context switch
     asm volatile(
