@@ -36,7 +36,7 @@ pf_handler_wrapper:
     pushl %eax  #4 bytes
     pushl 40(%esp)
     call PF 
-    addl $4, %esp;
+    addl $8, %esp;
     popfl
     popal
     iret
