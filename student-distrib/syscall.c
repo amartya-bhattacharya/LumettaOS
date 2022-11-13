@@ -12,46 +12,20 @@
 
 
 /* Local variables */
-struct fap fap_func_arr[3];
-int8_t check_exe[4] = {0x7f, 0x45, 0x4c, 0x46};  // first 4 bytes identifying an executable
-pcb_t* curr_pcb[MAX_PROCESSES] = {(pcb_t*)(_8MB - _8KB),
-								  (pcb_t*)(_8MB - 2 * _8KB),
-								  (pcb_t*)(_8MB - 3 * _8KB),
-								  (pcb_t*)(_8MB - 4 * _8KB),
-								  (pcb_t*)(_8MB - 5 * _8KB),
-								  (pcb_t*)(_8MB - 6 * _8KB)};  // array of pointers to pcb's
-struct fap terminal_op_table = {terminal_read, terminal_write, terminal_open, terminal_close};
-struct fap rtc_op_table = {rtc_read, rtc_write, rtc_open, rtc_close};
-struct fap dir_op_table = {dir_read, dir_write, dir_open, dir_close};
-struct fap file_op_table = {file_read, file_write, file_open, file_close};
+//struct fap fap_func_arr[3];
+const static int8_t check_exe[4] = {0x7f, 0x45, 0x4c, 0x46};  // first 4 bytes identifying an executable
+static struct fap terminal_op_table = {terminal_read, terminal_write, terminal_open, terminal_close};
+static struct fap rtc_op_table = {rtc_read, rtc_write, rtc_open, rtc_close};
+static struct fap dir_op_table = {dir_read, dir_write, dir_open, dir_close};
+static struct fap file_op_table = {file_read, file_write, file_open, file_close};
 
 
 /* Local functions */
 
-/*
- * get_PCB
- * DESCRIPTION: initializes PCB
- * INPUTS: NONE
- * OUTPUTS: intialized PCB  
- */
-pcb_t * get_pcb() {
-    pcb_t * pcb;
-    asm volatile(
-        "movl %%esp, %%eax;"
-        "andl $0x7FFFF, %%eax;"     // mask out the top 9 bits
-        "movl %%eax, %0;"
-        :"=r"(pcb)
-        :
-        :"%eax"
-    );
-    return pcb;
-}
-
-
 /* defines the file descriptor array, only to check 
 compile errors for sys calls, comment out later once
 PCB is implemented*/
-void set_fda(){ 
+/*void set_fda(){ 
 	// unsigned i;
 	// for(i = 0; i < 8; i++){
 	// 	file_desc_tb[i].f_op->read = NULL;
@@ -63,7 +37,7 @@ void set_fda(){
 	// }
 
 	return;
-}
+}*/
 
 
 /* System call functions */
@@ -76,7 +50,9 @@ void set_fda(){
  */
 int32_t sys_halt(uint8_t status) {
     union dirEntry d;
-    pcb_t * pcb = get_pcb();
+    pcb_t* pcb = get_pcb();
+
+	while(1) printf("halting\n");
 
     if (pcb->pid < 3) { // don't halt the shell or the init process
         return 0;
@@ -86,15 +62,6 @@ int32_t sys_halt(uint8_t status) {
     int i;
     for (i = 0; i < MAX_FILES; i++) curr_pcb[pcb->pid] -> file_desc_tb[0].flag = 0;
     // TODO set the process to inactive
-
-    // restore parent's esp and ebp     // TODO check the asm error here: "register 'bp' has a fixed purpose and may not be clobbered in an asm statement"
-    /*asm volatile(
-        "movl %0, %%esp;"
-        "movl %1, %%ebp;"
-        :
-        :"r"(pcb->saved_esp), "r"(pcb->saved_ebp)
-        :"%esp", "%ebp"
-    );*/
 
     // restore parent's paging      // TODO: check if this is correct. math was done in a hurry
     uint32_t parent_pid = pcb->parent_pid;
@@ -241,13 +208,13 @@ int32_t sys_execute(const uint8_t * command) {
 }
 
 
-int32_t get_args(uint8_t * buf, int32_t nbytes) {
+/*int32_t get_args(uint8_t * buf, int32_t nbytes) {
     pcb_t * pcb = get_pcb();
     if (buf == NULL || nbytes < 0) return -1;
     if (nbytes > 128) nbytes = 128;
     strncpy((int8_t *)buf, (const int8_t *)pcb->args, nbytes);
     return 0;
-}
+}*/
 
 
 /*int32_t sys_open(const uint8_t* filename)
@@ -257,7 +224,7 @@ int32_t get_args(uint8_t * buf, int32_t nbytes) {
 * 
  */
 int32_t sys_open (const uint8_t* filename){
-    pcb_t * pcb = get_pcb();
+    pcb_t* pcb = get_pcb();
     struct dentry dentry;
     int file_type = get_filetype(filename);
     int found_open_fd=0;

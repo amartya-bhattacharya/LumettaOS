@@ -160,10 +160,9 @@ void entry(unsigned long magic, unsigned long addr) {
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     //clear();
-    // system_execute((uint8_t*)"ls");
-    sys_execute((uint8_t*)"testprint");
     printf("Enabling Interrupts\n");
     sti();
+    sys_execute((uint8_t*)"testprint");
     
     #ifdef RUN_TESTS
         /* Run tests */

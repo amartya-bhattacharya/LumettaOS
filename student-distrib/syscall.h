@@ -35,23 +35,7 @@
 #define SYS_SET_HANDLER 9
 #define SYS_SIGRETURN 10
 
-// extern struct fap terminal_op_table;
-
-/* Struct for the PCB */
-typedef struct pcb_t {
-    struct file_desc file_desc_tb[8];   // file descriptor array
-    uint8_t args[128];                  // arguments
-    uint32_t pid;
-    uint32_t parent_pid;
-    uint32_t saved_esp;
-    uint32_t saved_ebp;
-    uint32_t active;
-} pcb_t;
-
-extern pcb_t * curr_pcb[MAX_PROCESSES];
-
 /* Local functions */
-pcb_t * get_pcb();
 int32_t sys_halt(uint8_t status);
 int32_t sys_execute(const uint8_t * command);
 int32_t sys_open (const uint8_t* filename);
@@ -63,7 +47,7 @@ int32_t sys_close (int32_t fd);
 void syscall_wrapper();
 
 /* Assembly functions */
-static inline int32_t execute(const uint8_t * command) {
+/*static inline int32_t execute(const uint8_t * command) {
     int32_t ret;
     asm volatile (
         "push %ebx"
@@ -78,9 +62,9 @@ static inline int32_t execute(const uint8_t * command) {
         :"=r" (ret)
     );
     return ret;
-}
+}*/
 
-static inline int32_t halt (uint8_t status) {
+/*static inline int32_t halt (uint8_t status) {
     int32_t ret;
     asm volatile (
         "push %ebx"
@@ -95,6 +79,6 @@ static inline int32_t halt (uint8_t status) {
         :"=r" (ret)
     );
     return ret;
-}
+}*/
 
 #endif /* _SYSCALL_H */
