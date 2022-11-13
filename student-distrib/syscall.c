@@ -220,7 +220,7 @@ int32_t sys_execute(const uint8_t * command) {
 /*int32_t sys_open(const uint8_t* filename)
 * DESCRIPTION: Open systemcall that initializes the file descriptor table entry
 * INPUTS: uint8_t filename
-* OUTPUTS: -1 upon failure, 0 upon success
+* OUTPUTS: -1 upon failure, fd index upon success
 * 
  */
 int32_t sys_open (const uint8_t* filename){
@@ -240,7 +240,7 @@ int32_t sys_open (const uint8_t* filename){
 
         for (i = 2; i < MAX_FILES; i++){ // for the length of the file array, excluding stdin/stdout
             if(pcb->file_desc_tb[i].flag == 0){  // if entry dne
-                found_open_fd=1;
+                found_open_fd=i;
                 pcb->file_desc_tb[i].f_op = &rtc_op_table;
                 pcb->file_desc_tb[i].flag=1;
                 pcb->file_desc_tb[i].file_position=0;
@@ -255,7 +255,7 @@ int32_t sys_open (const uint8_t* filename){
         //set the f_op fields to directory
         for (i=2; i<8; i++){ //for entire file array
             if(pcb->file_desc_tb[i].flag == 0){  //if entry dne
-                found_open_fd=1;
+                found_open_fd=i;
                 pcb->file_desc_tb[i].f_op = &dir_op_table;
                 pcb->file_desc_tb[i].flag=1;
                 pcb->file_desc_tb[i].file_position=0;
@@ -271,7 +271,7 @@ int32_t sys_open (const uint8_t* filename){
         for (i=2; i<8; i++){ //for entire file array
             if(pcb->file_desc_tb[i].flag == 0){  //if entry dne
             //HOW WOULD I WRITE TO TERMINAL??
-                found_open_fd=1;
+                found_open_fd=i;
                 pcb->file_desc_tb[i].f_op = &file_op_table;
                 pcb->file_desc_tb[i].flag=1;
                 pcb->file_desc_tb[i].file_position=0;
@@ -283,7 +283,7 @@ int32_t sys_open (const uint8_t* filename){
             return -1;
         }
     }
-    return 0;
+    return found_open_fd;
 }
 
 /*
@@ -302,11 +302,23 @@ int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes){
     // }
 
     pcb_t * pcb = get_pcb();
-
-    if(fd > 1){
+//add values for fd ==0 and fd ==1
+    if(fd > 1){ //this means it is an RTC device
         int32_t valid = (pcb->file_desc_tb[fd].f_op)->write(fd, buf, nbytes);
         if(valid != -1){
-            return nbytes;
+            return nbytes; //this should be fine??
+        }
+        return -1;
+    }
+    else if(fd ==0){
+        //stdin read-only for keyboard input--invalid
+        return -1;
+    }
+    else if (fd ==1){
+        //stdout write-only for terminal output
+         int32_t valid = (pcb->file_desc_tb[fd].f_op)->write(fd, buf, nbytes);
+         if(valid != -1){
+            return nbytes; //this should be fine.
         }
         return -1;
     }
@@ -323,13 +335,23 @@ int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes){
  */
 int32_t sys_read (int32_t fd, void* buf, int32_t nbytes){
     pcb_t * pcb = get_pcb();
-
+    int32_t valid;
     if(fd > 1){
-        int32_t valid = (pcb->file_desc_tb[fd].f_op)->read(fd, buf, nbytes);
+        valid = (pcb->file_desc_tb[fd].f_op)->read(fd, buf, nbytes);
         if(valid != -1){
-        pcb->file_desc_tb[fd].file_position += nbytes;
-        return valid;
+            pcb->file_desc_tb[fd].file_position += valid; //changed from nbytes to valid
+            return valid;
         }
+        return -1;
+    }
+    else if (fd ==0){
+        valid = (pcb->file_desc_tb[fd].f_op)->read(fd, buf, nbytes);
+        if(valid != -1){
+            pcb->file_desc_tb[fd].file_position += valid; //changed from nbytes to valid
+            return valid;
+        }
+    }
+    else if(fd ==1){
         return -1;
     }
     return -1;
