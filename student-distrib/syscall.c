@@ -206,9 +206,9 @@ int32_t sys_execute(const uint8_t * command) {
 
     // TODO check if this is correct/needed
     asm volatile(
-        "movl %%esp, %%eax;"
-        "movl %%ebp, %%ecx;"
-        : "=a" (curr_pcb[pcb_index]->saved_esp), "=c" (curr_pcb[pcb_index]->saved_ebp)
+        "movl %%esp, %0;"
+        "movl %%ebp, %1;"
+        : "=r" (curr_pcb[pcb_index]->saved_esp), "=r" (curr_pcb[pcb_index]->saved_ebp)
     );
     // 0x083FFFFC
     uint32_t user_sp = 0x083FFFFC;
@@ -230,16 +230,13 @@ int32_t sys_execute(const uint8_t * command) {
         "orl $0x200, (%%esp);"     // set IF bit
         // "pushl %%eax;"   // push back
         "pushl %2;"     // push cs
-        "pushl %3;"     // push eip
+        "pushl (0x08048018);"     // push eip
         "iret;"
-        "execute_ret:"
-        "leave;"
-        "ret;"
         :
         : "r" (USER_DS), "r" (user_sp), "r" (USER_CS), "r" (entry_point)
-        : "eax"
     );
 
+	execute_ret:
     return 0;
 }
 
