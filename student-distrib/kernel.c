@@ -153,14 +153,14 @@ void entry(unsigned long magic, unsigned long addr) {
     rtc_init();
     keyboard_init();
     page_init();
-    printf("size of dentry: %d, inode: %d, bootblock: %d, data: %d", sizeof(struct dentry), sizeof(struct inode), sizeof(struct bootblock), sizeof(struct block));
+    //printf("size of dentry: %d, inode: %d, bootblock: %d, data: %d\n", sizeof(struct dentry), sizeof(struct inode), sizeof(struct bootblock), sizeof(struct block));
     
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     //clear();
-    printf("Enabling Interrupts\n");
+    //printf("Enabling Interrupts\n");
     sti();
     sys_execute((uint8_t*)"testprint");
     
