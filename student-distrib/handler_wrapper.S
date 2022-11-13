@@ -258,22 +258,16 @@ eax_mem: .long 0x0
 syscall_wrapper:
     pushal          #push all registers
     pushfl
-    pushl %ebp
-    pushl %edi
-    pushl %esi
     pushl %edx
     pushl %ecx
     pushl %ebx
-    cmpl $4, %eax
+    cmpl $5, %eax
     ja invalid
     call *sys_call_table(, %eax, 4)
     movl %eax, eax_mem
     popl %ebx       #pop all registers
     popl %ecx
     popl %edx
-    popl %esi
-    popl %edi
-    popl %ebp
     popfl
     popal
     iret
@@ -282,13 +276,10 @@ syscall_wrapper:
     popl %ebx       #pop all registers
     popl %ecx
     popl %edx
-    popl %esi
-    popl %edi
-    popl %ebp
     popfl
     popal
     movl $-1, %eax  #move invalid value into eax
-    ret
+    iret
 
     sys_call_table:
     # .long halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn
