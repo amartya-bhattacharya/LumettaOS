@@ -14,10 +14,10 @@
 /* Local variables */
 //struct fap fap_func_arr[3];
 const static int8_t check_exe[4] = {0x7f, 0x45, 0x4c, 0x46};  // first 4 bytes identifying an executable
-static struct fap terminal_op_table = {terminal_read, terminal_write, terminal_open_fail, terminal_close_fail};
-static struct fap rtc_op_table = {rtc_read, rtc_write, rtc_open, rtc_close};
-static struct fap dir_op_table = {dir_read, dir_write, dir_open, dir_close};
-static struct fap file_op_table = {file_read, file_write, file_open, file_close};
+static struct fap terminal_op_table = {.read = terminal_read, .write = terminal_write, .open = terminal_open_fail, .close = terminal_close_fail};
+static struct fap rtc_op_table = {.read = rtc_read, .write = rtc_write, .open = rtc_open, .close = rtc_close};
+static struct fap dir_op_table = {.read = dir_read, .write = dir_write, .open = dir_open, .close = dir_close};
+static struct fap file_op_table = {.read = file_read, .write = file_write, .open = file_open, .close = file_close};
 
 
 /* Local functions */
@@ -182,10 +182,10 @@ int32_t sys_execute(const uint8_t * command) {
 
     // set up tss
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = _8MB - (pcb_index + 1) * _8KB;
 	asm volatile(
 		"movl %%cr3, %0;"
-		: "=r" (tss.cr3)
+		"movl %%esp, %1;"
+		: "=r" (tss.cr3), "=r" (tss.esp0)
 	);
 
     // context switch
@@ -197,7 +197,7 @@ int32_t sys_execute(const uint8_t * command) {
         "orl $0x200, (%%esp);"     // set IF bit
         // "pushl %%eax;"   // push back
         "pushl %2;"     // push cs
-        "pushl (0x08048018);"     // push eip
+        "pushl %3;"     // push eip
         "iret;"
         :
         : "r" (USER_DS), "r" (user_sp), "r" (USER_CS), "r" (entry_point)
