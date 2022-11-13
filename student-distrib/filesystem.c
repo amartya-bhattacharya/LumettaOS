@@ -6,6 +6,21 @@
 #include "lib.h"
 //#include "paging.h"
 
+#define _8MB 0x00800000
+#define _4MB 0x00400000
+#define _8KB 0x00002000
+#define _4KB 0x00001000
+
+pcb_t* curr_pcb[6] =
+{
+	(pcb_t*)(_8MB - _8KB),
+	(pcb_t*)(_8MB - 2 * _8KB),
+	(pcb_t*)(_8MB - 3 * _8KB),
+	(pcb_t*)(_8MB - 4 * _8KB),
+	(pcb_t*)(_8MB - 5 * _8KB),
+	(pcb_t*)(_8MB - 6 * _8KB)
+};  // array of pointers to pcb's
+
 //address of bootblock which is also address of start of filesystem
 static struct bootblock* boot;
 
@@ -22,6 +37,28 @@ static uint32_t offset[8];
 static uint32_t dnum;
 
 //static union tblEntry fstable[1024] __attribute__((aligned(4096)));
+
+/*
+ * get_PCB
+ * DESCRIPTION: initializes PCB
+ * INPUTS: NONE
+ * OUTPUTS: intialized PCB  
+ */
+pcb_t* get_pcb() {
+    pcb_t* pcb;
+	uint32_t e;	//this is esp
+	asm(
+		"movl %%esp, %0;"
+		: "=r" (e)
+	);
+	//0x3FF is 1023, this calculates whether esp is in p0, p1, etc
+	// e / _8KB is 0x3FF if esp is in p0, 0x3FE if in p1, etc.
+	e = 0x3FF - (e / _8KB);
+	if(e >= 6)
+		return NULL;
+	pcb = curr_pcb[e];
+    return pcb;
+}
 
 /*
  * get_filetype
@@ -121,22 +158,6 @@ int32_t read_data(uint32_t nd, uint32_t off, uint8_t* buf, uint32_t len)
 		}
 	}
 	return len;
-}
-
-/*
- * Does nothing
- */
-int32_t dir_execute(const uint8_t* command)
-{
-	return -1;
-}
-
-/*
- * Does nothing
- */
-int32_t dir_halt(uint8_t status)
-{
-	return -1;
 }
 
 /*
@@ -259,20 +280,4 @@ int32_t file_close(int32_t fd)
 	offset[fd] = 0;
 	avlfiles |= 0x1 << fd;	//makes file available again
 	return 0;
-}
-
-/*
- * Does nothing
- */
-int32_t file_execute(const uint8_t* command)
-{
-	return -1;
-}
-
-/*
- * Does nothing
- */
-int32_t file_halt (uint8_t status)
-{
-	return -1;
 }

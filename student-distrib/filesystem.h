@@ -54,6 +54,21 @@ struct file_desc
 	uint32_t flag;
 } __attribute__((packed));
 
+/* Struct for the PCB */
+typedef struct pcb_t {
+    struct file_desc file_desc_tb[8];   // file descriptor array
+    uint8_t args[128];                  // arguments
+    uint32_t pid;
+    uint32_t parent_pid;
+    uint32_t saved_esp;
+    uint32_t saved_ebp;
+    uint32_t active;
+} pcb_t;
+
+extern pcb_t* curr_pcb[6];
+
+pcb_t* get_pcb();
+
 int32_t get_filetype(const uint8_t* fname);
 
 int32_t get_inode(const uint8_t* fname);
@@ -72,10 +87,6 @@ int32_t dir_write(int32_t fd, const void* buf, int32_t n);
 
 int32_t dir_close(int32_t fd);
 
-int32_t dir_execute(const uint8_t* command);
-
-int32_t dir_halt (uint8_t status);
-
 int32_t file_open(const uint8_t* fn);
 
 int32_t file_read(int32_t fd, void* buf, int32_t n);
@@ -83,9 +94,5 @@ int32_t file_read(int32_t fd, void* buf, int32_t n);
 int32_t file_write(int32_t fd, const void* buf, int32_t n);
 
 int32_t file_close(int32_t fd);
-
-int32_t file_execute(const uint8_t* command);
-
-int32_t file_halt (uint8_t status);
 
 #endif
