@@ -135,15 +135,19 @@ int32_t sys_execute(const uint8_t * command) {
 
     // check ELF header to see if it is a executable (read_data first 4 bytes)
     read_data(command_inode, 0, (uint8_t *)exe, 40);
-    if (strncmp(exe, check_exe, 4))
+    if (strncmp(exe, check_exe, 4)) {
         return -1; // not an executable
-    
+    } else {
+        printf("executable check passed\n");
+    }
+        
     entry_point = (void *)(((uint32_t)(exe[24])) + (((uint32_t)(exe[25])) << 8) + (((uint32_t)(exe[26])) << 16) + (((uint32_t)(exe[27])) << 24));
     
     // find first active pcb
 	int pcb_index = 0;
 	while (pcb_index < MAX_PROCESSES && curr_pcb[pcb_index]->active) pcb_index++;
 	if (pcb_index == MAX_PROCESSES) return -1;  // no available pcb's
+    printf("pcb index: %d", pcb_index);
 
     // set up paging for the program (flush TLB)
 	d.val = 7;		//sets P, RW, and US bits 0b111
@@ -178,14 +182,20 @@ int32_t sys_execute(const uint8_t * command) {
         : "=r" (curr_pcb[pcb_index]->saved_esp), "=r" (curr_pcb[pcb_index]->saved_ebp)
     );
     // 0x083FFFFC
-    uint32_t user_sp = 0x083FFFFC;
+    uint32_t user_sp = _8MB - curr_pcb[pcb_index]->pid * _8KB - 4;
 
     // set up tss
     tss.ss0 = KERNEL_DS;
-	asm volatile(
+    tss.esp0 = user_sp;
+	// asm volatile(
+	// 	"movl %%cr3, %0;"
+	// 	"movl %%esp, %1;"
+	// 	: "=r" (tss.cr3), "=r" (tss.esp0)
+	// );
+
+    asm volatile(
 		"movl %%cr3, %0;"
-		"movl %%esp, %1;"
-		: "=r" (tss.cr3), "=r" (tss.esp0)
+		: "=r" (tss.cr3)
 	);
 
     // context switch
@@ -193,17 +203,20 @@ int32_t sys_execute(const uint8_t * command) {
         "pushl %0;"     // push kernel ds
         "pushl %1;"     // push esp
         "pushfl;"       // push eflags
-        // "popl %%eax;"    // pop eflags
-        "orl $0x200, (%%esp);"     // set IF bit
-        // "pushl %%eax;"   // push back
+        "popl %%edx;"    // pop eflags
+        "orl $0x200, %%edx;"     // set IF bit
+        "pushl %%edx;"   // push back
         "pushl %2;"     // push cs
         "pushl %3;"     // push eip
         "iret;"
+        "execute_ret:"
+        "leave;"
+        "ret;"
         :
         : "r" (USER_DS), "r" (user_sp), "r" (USER_CS), "r" (entry_point)
     );
 
-	execute_ret:
+	
     return 0;
 }
 
