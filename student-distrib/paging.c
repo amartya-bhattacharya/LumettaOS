@@ -82,13 +82,15 @@ void page_init()
 	spawnTbl(table);
 	for(i = 0xB8; i < 0xC0; i++)
 	{
-		vidPg.val = 0x3;
+		vidPg.val = 0x7;		/* this allows the pages to get accessed by users, and is restricted by the vidTable dirEntry */
 		vidPg.ent.add = i;		/* assigns the physical memory to be the same as virtual memory */
 		table[i] = vidPg;		/* vidmem starts at 0xB8000, divide by 4KiB to get index */
 	}
 	spawnDir();
 	pageDir[0] = vidTable;
 	pageDir[1] = kernel;
+	vidTable.val = (unsigned)table | 7;
+	pageDir[33] = vidTable;
 	pageEnable();
 	return;
 }
