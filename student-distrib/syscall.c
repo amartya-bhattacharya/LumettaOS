@@ -14,7 +14,7 @@
 /* Local variables */
 //struct fap fap_func_arr[3];
 const static int8_t check_exe[4] = {0x7f, 0x45, 0x4c, 0x46};  // first 4 bytes identifying an executable
-static struct fap terminal_op_table = {terminal_read, terminal_write, terminal_open, terminal_close};
+static struct fap terminal_op_table = {terminal_read, terminal_write, terminal_open_fail, terminal_close_fail};
 static struct fap rtc_op_table = {rtc_read, rtc_write, rtc_open, rtc_close};
 static struct fap dir_op_table = {dir_read, dir_write, dir_open, dir_close};
 static struct fap file_op_table = {file_read, file_write, file_open, file_close};
