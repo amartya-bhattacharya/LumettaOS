@@ -402,7 +402,7 @@ int32_t sys_close (int32_t fd){
 *OUTPUTS: If no arguments, or if arguments and a terminal NULL (0-byte) do not fit in buffer, return -1.
 *SIDE EFFECTS: initialize the shell task’s argument data to the empty string
 */
-int32_t getargs (uint8_t* buf, int32_t nbytes){
+int32_t sys_getargs (uint8_t* buf, int32_t nbytes){
     pcb_t * pcb = get_pcb();
     int i;
     int flag = 0;
@@ -426,7 +426,7 @@ int32_t getargs (uint8_t* buf, int32_t nbytes){
         return -1;
     }
 
-    strncpy(buf, (const int8_t *) pcb->args, nbytes);
+    strncpy((int8_t *) buf, (const int8_t *) pcb->args, nbytes);
 
     return 0;
 }

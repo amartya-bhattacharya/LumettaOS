@@ -288,7 +288,7 @@ syscall_wrapper:
     pushl %edx
     pushl %ecx
     pushl %ebx
-    cmpl $5, %eax
+    cmpl $7, %eax
     ja invalid
     call *sys_call_table(, %eax, 4)
     movl %eax, eax_mem
@@ -307,7 +307,7 @@ syscall_wrapper:
 
     sys_call_table:
     # .long halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn
-    .long 0x0, sys_halt, sys_execute, sys_read, sys_write, sys_open, sys_close
+    .long 0x0, sys_halt, sys_execute, sys_read, sys_write, sys_open, sys_close, sys_getargs
 
 
 # halt_wrapper:
