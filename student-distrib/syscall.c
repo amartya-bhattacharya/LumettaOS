@@ -65,19 +65,19 @@ int32_t sys_halt(uint8_t status) {
     // restore parent's paging
     d.val = 7;		//sets P and RW bits
     d.whole.ps = 1;
-	d.whole.add_22_31 = (_8MB + _4MB * pcb->parent_pid) >> 22;
+	d.whole.add_22_31 = (_8MB + _4MB * pcb->parent_pid) >> 22; //bit shift by 22 to access correct address
 	chgDir(32, d);	//32 = 128 / 4 (all programs are in the 128-132 MiB vmem page
     flushTLB();
 
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = _8MB - (pcb->parent_pid) * _8KB - 4;
+    tss.esp0 = _8MB - (pcb->parent_pid) * _8KB - 4; //subtract 4 for padding
 
     endof_halt:
-
+//pass in args
     asm volatile(
         "movl %0, %%esp;"
         "movl %1, %%ebp;"
-        "movsbl %2, %%eax;"
+        "movsbl %2, %%eax;"            
         "jmp execute_ret;"
         :
         :"r"(pcb->saved_esp), "r"(pcb->saved_ebp), "r"(status)
@@ -94,7 +94,7 @@ int32_t sys_halt(uint8_t status) {
  */
 int32_t sys_execute(const uint8_t * command) {
     uint8_t command_name[32] = {0};     // first word of the command
-    uint32_t args[128] = {0}; //
+    uint32_t args[128] = {0}; //args buffer is 128 in length including null char
     uint8_t exe[40] = {0};  // header occupies first 40 bytes of the file
     struct dentry command_dentry;
     uint32_t command_inode;
@@ -111,14 +111,14 @@ int32_t sys_execute(const uint8_t * command) {
     if (command_name[0] == 0) return 0;
 
     // check if command is quit terminal
-    if (strncmp((int8_t*)command_name, "quit", 4) == 0) {
+    if (strncmp((int8_t*)command_name, "quit", 4) == 0) { //4 bytes long string
         return sys_halt(0);
     }
     // check rest of command for arguments
     if (command[i] == ' ') {
         i++;
         int j = 0;
-        while (command[i] != '\n' && i < 128) {
+        while (command[i] != '\n' && i < 128) { //for the length of the buffer
             args[j] = command[i];
             i++;
             j++;
@@ -129,19 +129,18 @@ int32_t sys_execute(const uint8_t * command) {
         return -1; // read failed
 
     // TODO check dentry file descriptor
-    if (command_dentry.ft != 2)
+    if (command_dentry.ft != 2)     //file desc type
         return -1; // not a file
     
     command_inode = command_dentry.ind;
 
     // check ELF header to see if it is a executable (read_data first 4 bytes)
-    read_data(command_inode, 0, (uint8_t *)exe, 40);
-    if (strncmp((int8_t *) exe, (int8_t *) check_exe, 4))
+    read_data(command_inode, 0, (uint8_t *)exe, 40);        //40 bytes
+    if (strncmp((int8_t *) exe, (int8_t *) check_exe, 4))   //4 bytes
         return -1; // not an executable
 
     //entry_point = ((exe[27]) << 24) | ((exe[26]) << 16) | ((exe[25]) << 8) | (exe[24]); // get entry point from ELF header
-    entry_point = (((uint32_t)(exe[24]) & 0xFF) + (((uint32_t)(exe[25]) & 0xFF) << 8) + (((uint32_t)(exe[26]) & 0xFF) << 16) + (((uint32_t)(exe[27]) & 0xFF) << 24));
-
+    entry_point = (((uint32_t)(exe[24]) & 0xFF) + (((uint32_t)(exe[25]) & 0xFF) << 8) + (((uint32_t)(exe[26]) & 0xFF) << 16) + (((uint32_t)(exe[27]) & 0xFF) << 24)); //bits [24:27] of executable contain EIP
     // find first active pcb
 	int pcb_index = 0;
 	while (pcb_index < MAX_PROCESSES && curr_pcb[pcb_index]->active) pcb_index++;
@@ -175,11 +174,11 @@ int32_t sys_execute(const uint8_t * command) {
     
 
     // 0x083FFFFC
-    uint32_t user_sp = _132MB - 4;
+    uint32_t user_sp = _132MB - 4;  //find user space
 
     // set up tss
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = _8MB - curr_pcb[pcb_index]->pid * _8KB - 4;
+    tss.esp0 = _8MB - curr_pcb[pcb_index]->pid * _8KB - 4;  //find EIP
 	// asm volatile(
 	// 	"movl %%cr3, %0;"
 	// 	"movl %%esp, %1;"
@@ -267,7 +266,7 @@ int32_t sys_open (const uint8_t* filename){
             return -1;
         }
     }
-    else if(file_type == 1){
+    else if(file_type == 1){ 
         //set the f_op fields to directory
         for (i=2; i<8; i++){ //for entire file array
             if(pcb->file_desc_tb[i].flag == 0){  //if entry dne
@@ -286,7 +285,6 @@ int32_t sys_open (const uint8_t* filename){
         //set the f_op fields to regular file
         for (i=2; i<8; i++){ //for entire file array
             if(pcb->file_desc_tb[i].flag == 0){  //if entry dne
-            //HOW WOULD I WRITE TO TERMINAL??
                 found_open_fd=i;
                 pcb->file_desc_tb[i].f_op = &file_op_table;
                 pcb->file_desc_tb[i].flag=1;
@@ -385,10 +383,11 @@ int32_t sys_close (int32_t fd){
     if(fd == 1 || fd == 0)
         return -1;
 
+    pcb->file_desc_tb[fd].f_op->close(fd);
+    pcb->file_desc_tb[fd].f_op->close = NULL;
     pcb->file_desc_tb[fd].f_op->read = NULL;
 	pcb->file_desc_tb[fd].f_op->write = NULL;
 	pcb->file_desc_tb[fd].f_op->open = NULL;
-	pcb->file_desc_tb[fd].f_op->close = NULL;
     pcb->file_desc_tb[fd].inode = 0;
     pcb->file_desc_tb[fd].file_position = 0;
     pcb->file_desc_tb[fd].flag = 0; 
@@ -415,14 +414,14 @@ int32_t sys_getargs (uint8_t* buf, int32_t nbytes){
         return -1;
     }
     
-    for(i = 0; i < 128; i++ ){
+    for(i = 0; i < 128; i++ ){  //for all of argument array
         if(pcb->args[i] == '\0'){
             flag = 1;
             break;
         }
     }
 
-     if(nbytes> 128 || flag == 0  ){
+     if(nbytes> 128 || flag == 0  ){ //if greater than argument array
         return -1;
     }
 
