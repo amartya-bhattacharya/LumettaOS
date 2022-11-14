@@ -51,8 +51,7 @@ PCB is implemented*/
 int32_t sys_halt(uint8_t status) {
     union dirEntry d;
     pcb_t* pcb = get_pcb();
-    if (pcb->parent_pid == -1) while(1) printf("halt");
-    
+
     // close all files
     int i;
     for (i = 0; i < MAX_FILES; i++) {
@@ -60,6 +59,9 @@ int32_t sys_halt(uint8_t status) {
         pcb->active = 0;
     }
 
+    if (pcb->parent_pid == -1) 
+        goto endof_halt;
+    
     // restore parent's paging
     d.val = 7;		//sets P and RW bits
     d.whole.ps = 1;
@@ -69,6 +71,8 @@ int32_t sys_halt(uint8_t status) {
 
     tss.ss0 = KERNEL_DS;
     tss.esp0 = _8MB - (pcb->parent_pid) * _8KB - 4;
+
+    endof_halt:
 
     asm volatile(
         "movl %0, %%esp;"
@@ -132,7 +136,7 @@ int32_t sys_execute(const uint8_t * command) {
 
     // check ELF header to see if it is a executable (read_data first 4 bytes)
     read_data(command_inode, 0, (uint8_t *)exe, 40);
-    if (strncmp(exe, check_exe, 4))
+    if (strncmp((int8_t *) exe, (int8_t *) check_exe, 4))
         return -1; // not an executable
 
     //entry_point = ((exe[27]) << 24) | ((exe[26]) << 16) | ((exe[25]) << 8) | (exe[24]); // get entry point from ELF header
