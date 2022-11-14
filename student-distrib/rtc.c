@@ -50,14 +50,14 @@ void rtc_init(void) {
  * SIDE EFFECTS: Blocks until an interrupt occurs
  */
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes) {
+	sti();
     if (buf == NULL) {
         return -1;                          /* if the buffer is NULL, the call returns -1 */
     }
     // rtc status = 1
     /* wait for the next interrupt */
-    while (rtc_status == 1) {                  // use rtc status to check if max count reached
-        /* do nothing */
-    }
+    while (rtc_status == 1);                  // use rtc status to check if max count reached
+	rtc_status = 1;
     return 0;
 }
 
@@ -163,7 +163,7 @@ void rtc_handler(void) {
     }
     if (flag) putc_term('1');
     #endif
-    rtc_status=1;
+    rtc_status=0;
     outb(RTC_REG_C, RTC_PORT);              /* select register C */
     inb(RTC_DATA);                          /* just throw away contents */
 
