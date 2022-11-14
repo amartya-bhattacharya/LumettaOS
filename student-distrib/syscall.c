@@ -94,7 +94,7 @@ int32_t sys_halt(uint8_t status) {
 int32_t sys_execute(const uint8_t * command) {
     uint8_t command_name[32] = {0};     // first word of the command
     uint32_t args[128] = {0}; //
-    int8_t exe[40] = {0};  // header occupies first 40 bytes of the file
+    uint8_t exe[40] = {0};  // header occupies first 40 bytes of the file
     struct dentry command_dentry;
     uint32_t command_inode;
     uint32_t entry_point;                 // entry point of the executable
@@ -138,8 +138,8 @@ int32_t sys_execute(const uint8_t * command) {
     if (strncmp(exe, check_exe, 4))
         return -1; // not an executable
 
-    entry_point = ((exe[27]) << 24) | ((exe[26]) << 16) | ((exe[25]) << 8) | (exe[24]); // get entry point from ELF header
-    // entry_point = (((uint32_t)(exe[24])) + (((uint32_t)(exe[25])) << 8) + (((uint32_t)(exe[26])) << 16) + (((uint32_t)(exe[27])) << 24));
+    //entry_point = ((exe[27]) << 24) | ((exe[26]) << 16) | ((exe[25]) << 8) | (exe[24]); // get entry point from ELF header
+    entry_point = (((uint32_t)(exe[24]) & 0xFF) + (((uint32_t)(exe[25]) & 0xFF) << 8) + (((uint32_t)(exe[26]) & 0xFF) << 16) + (((uint32_t)(exe[27]) & 0xFF) << 24));
 
     // find first active pcb
 	int pcb_index = 0;
@@ -152,6 +152,8 @@ int32_t sys_execute(const uint8_t * command) {
 	d.whole.add_22_31 = (_8MB + _4MB * pcb_index) >> 22; 
 	chgDir(32, d);	//32 = 128 / 4 (all programs are in the 128-132 MiB vmem page)
 	flushTLB();
+
+    //entry_point = *(uint32_t *)(0x8048018);
 
     // put arguments in pcb
     strcpy((int8_t *)curr_pcb[pcb_index]->args, (const int8_t *)args);
@@ -190,10 +192,10 @@ int32_t sys_execute(const uint8_t * command) {
 	// 	: "=r" (tss.cr3), "=r" (tss.esp0)
 	// );
 
-    asm volatile(
-		"movl %%cr3, %0;"
-		: "=r" (tss.cr3)
-	);
+    // asm volatile(
+	// 	"movl %%cr3, %;"
+	// 	: "=r" (tss.cr3)
+	// );
 
     // context switch
     asm volatile(

@@ -285,8 +285,6 @@ xf_handler_wrapper:
 eax_mem: .long 0x0
 
 syscall_wrapper:
-    pushal          #push all registers
-    pushfl
     pushl %edx
     pushl %ecx
     pushl %ebx
@@ -297,22 +295,19 @@ syscall_wrapper:
     popl %ebx       #pop all registers
     popl %ecx
     popl %edx
-    popfl
-    popal
     iret
 
     invalid:
     popl %ebx       #pop all registers
     popl %ecx
     popl %edx
-    popfl
-    popal
+
     movl $-1, %eax  #move invalid value into eax
     iret
 
     sys_call_table:
     # .long halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn
-    .long sys_halt, sys_execute, sys_read, sys_write, sys_open, sys_close
+    .long 0x0, sys_halt, sys_execute, sys_read, sys_write, sys_open, sys_close
 
 
 
