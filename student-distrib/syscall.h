@@ -45,6 +45,7 @@ int32_t sys_close (int32_t fd);
 
 /* Wrapper function for syscall handler */
 void syscall_wrapper();
+extern void setup_context_switch(uint32_t esp, uint32_t eip);
 
 /* Assembly functions */
 /*static inline int32_t execute(const uint8_t * command) {
