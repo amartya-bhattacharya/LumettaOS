@@ -36,7 +36,7 @@ static struct bootblock* boot;
 //static uint32_t offset[8];
 
 //saves index of last accessed directory
-static uint32_t dnum;
+//static uint32_t dnum;
 
 //static union tblEntry fstable[1024] __attribute__((aligned(4096)));
 
@@ -56,7 +56,7 @@ pcb_t* get_pcb() {
 	//0x3FF is 1023, this calculates whether esp is in p0, p1, etc
 	// e / _8KB is 0x3FF if esp is in p0, 0x3FE if in p1, etc.
 	e = 0x3FF - (e / _8KB);
-	if(e >= 6)
+	if(e >= 6)	//number of shells
 		return NULL;
 	pcb = curr_pcb[e];
     return pcb;
@@ -69,15 +69,20 @@ pcb_t* get_pcb() {
  * OUTPUTS: returns file type, returns -1 if invalid  
  */
 int32_t get_filetype(const uint8_t* fname){
-	int i;
+	/*int i;
 	for(i = 0;i < boot->nent;i++)	//iterate through dentries
 	{
 		if(strncmp((int8_t*)fname, (int8_t*)(boot->dirs[i].name), 32) == 0)	//maximum size of a filename 
 		{
 			return boot->dirs[i].ft;
 		}
-	}
-	return -1;
+	}*/
+	struct dentry d;
+	
+	if(read_dentry_by_name(fname, &d))
+		return -1;
+	
+	return (int32_t)d.ft;
 }
 
 /*
@@ -87,15 +92,18 @@ int32_t get_filetype(const uint8_t* fname){
  * OUTPUTS: returns inode, returns -1 if invalid  
  */
 int32_t get_inode(const uint8_t* fname){
-	int i;
+	/*int i;
 	for(i = 0;i < boot->nent;i++)	//iterate through dentries
 	{
 		if(strncmp((int8_t*)fname, (int8_t*)(boot->dirs[i].name), 32) == 0)	//maximum size of a filename 
 		{
 			return boot->dirs[i].ind;
 		}
-	}
-	return -1;
+	}*/
+	struct dentry d;
+	if(read_dentry_by_name(fname, &d))
+		return -1;
+	return d.ind;
 }
 /*
  * Changes dent to be that of corresponding filename
@@ -176,7 +184,7 @@ int32_t dir_open(const uint8_t* fn)
 	fstable[0].p = 1;		//setup boot block
 	chgDir(2, e);			//puts filesystem in the virtual memory space right after kernel*/
 	boot = (struct bootblock*)fn;
-	dnum = 0;
+	//dnum = 0;
 	return 0;
 }
 
@@ -189,9 +197,10 @@ int32_t dir_read(int32_t fd, void* buf, int32_t n)
 {
 	int32_t i;
 	struct dentry d;
-	if(read_dentry_by_index(dnum, &d))
+	pcb_t* p = get_pcb();
+	if(read_dentry_by_index(p->file_desc_tb[fd].file_position, &d))
 		return -1;
-	dnum++;
+	p->file_desc_tb[fd].file_position++;
 	for(i = 0;i < n;i++)
 	{
 		((uint8_t*)buf)[i] = d.name[i];
@@ -220,7 +229,8 @@ int32_t dir_write(int32_t fd, const void* buf, int32_t n)
  */
 int32_t dir_close(int32_t fd)
 {
-	dnum = 0;
+	pcb_t* p = get_pcb();
+	p->file_desc_tb[fd].flag = 0;
 	return 0;
 }
 
@@ -280,7 +290,7 @@ int32_t file_write(int32_t fd, const void* buf, int32_t n)
 int32_t file_close(int32_t fd)
 {
 	pcb_t* p = get_pcb();
-	if(fd > 7 || fd < 2)
+	if(fd > 7 || fd < 2)	//if file is invalid
 		return -1;
 	p->file_desc_tb[fd].flag = 0;
 	return 0;

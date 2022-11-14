@@ -285,23 +285,29 @@ int list_all_files_test(){
 /* Checkpoint 3 tests */
 
 int check_bad_input_2(){
+	int valid = sys_execute((uint8_t*)"blah");
+	if(valid != -1){
+		return FAIL;
+	}	
+
+	uint8_t** below = (uint8_t**)(_128MB - _4KB);
+	if(sys_vidmap(below) != -1){
+		return FAIL;
+	}
+
+	uint8_t** above = (uint8_t**)(_132MB + _4KB);
+	if(sys_vidmap(above) != -1){
+		return FAIL;
+	}
+
+	uint8_t** in = (uint8_t**)(_128MB + _4KB);
+	if(sys_vidmap(in) == -1){
+		return FAIL;
+	}
+
 	return PASS;
 }
 
-int r_w_syscalls(){
-	
-	return PASS;
-}
-
-int file_descriptor(){
-	// pcb_t * pcb = get_pcb();
-	// int i
-
-
-	// sys_open(cat);
-	
-	return PASS;
-}
 
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -328,8 +334,4 @@ void launch_tests(){
 	TEST_OUTPUT("terminal test", terminal_read_test());
 	//TEST_OUTPUT("check bad input", check_bad_input());
 	//TEST_OUTPUT("check bad input 2", check_bad_input_2());
-	//TEST_OUTPUT("read/write system calls", r_w_syscalls());
-	//TEST_OUTPUT("execute system call", execute());
-	//TEST_OUTPUT("system calls for file descriptor array", file_descriptor());
-
 }
