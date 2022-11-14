@@ -42,6 +42,7 @@ int32_t sys_open (const uint8_t* filename);
 int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes);
 int32_t sys_read (int32_t fd, void* buf, int32_t nbytes);
 int32_t sys_close (int32_t fd);
+int32_t getargs (uint8_t* buf, int32_t nbytes);
 
 /* Wrapper function for syscall handler */
 void syscall_wrapper();
