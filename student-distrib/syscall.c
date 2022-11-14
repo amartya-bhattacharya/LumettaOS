@@ -395,3 +395,38 @@ int32_t sys_close (int32_t fd){
 
     return 0;
 }
+
+/*getargs
+*DESCRIPTION: reads the program’s command line arguments into a user-level buffer
+*INPUTS: buffer and number of bytes in argument
+*OUTPUTS: If no arguments, or if arguments and a terminal NULL (0-byte) do not fit in buffer, return -1.
+*SIDE EFFECTS: initialize the shell task’s argument data to the empty string
+*/
+int32_t getargs (uint8_t* buf, int32_t nbytes){
+    pcb_t * pcb = get_pcb();
+    int i;
+    int flag = 0;
+
+    if (buf == NULL || nbytes < 0){
+        return -1;
+    }
+
+    if (pcb->args[0] == 0){
+        return -1;
+    }
+    
+    for(i = 0; i < 128; i++ ){
+        if(pcb->args[i] == '\0'){
+            flag = 1;
+            break;
+        }
+    }
+
+     if(nbytes> 128 || flag == 0  ){
+        return -1;
+    }
+
+    strncpy(buf, (const int8_t *) pcb->args, nbytes);
+
+    return 0;
+}
