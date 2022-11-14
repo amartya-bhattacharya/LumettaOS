@@ -162,7 +162,7 @@ void entry(unsigned long magic, unsigned long addr) {
     //clear();
     //printf("Enabling Interrupts\n");
     sti();
-    sys_execute((uint8_t*)"shell");
+    sys_execute((uint8_t*)"testprint");
     
     #ifdef RUN_TESTS
         /* Run tests */
