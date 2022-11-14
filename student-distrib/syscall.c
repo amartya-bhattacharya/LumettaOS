@@ -240,17 +240,20 @@ int32_t sys_execute(const uint8_t * command) {
  */
 int32_t sys_open (const uint8_t* filename){
     pcb_t* pcb = get_pcb();
-    struct dentry dentry;
-    int file_type = get_filetype(filename);
+    struct dentry d;
+    //int file_type = get_filetype(filename);
     int found_open_fd=0;
     int i;
 
-    if(filename == NULL || *filename == '\0' || read_dentry_by_name(filename, &dentry) == -1 || file_type == -1){
+    /*if(filename == NULL || *filename == '\0' || read_dentry_by_name(filename, &d) == -1 || file_type == -1){
         return -1;
-    }
+    }*/
+
+	if(read_dentry_by_name(filename, &d))
+		return -1;
 
     //return -1 if array is full
-    if (file_type == 0){
+    if (d.ft == 0){
         //set the f_op fields to RTC
 
         for (i = 2; i < MAX_FILES; i++){ // for the length of the file array, excluding stdin/stdout
@@ -266,7 +269,7 @@ int32_t sys_open (const uint8_t* filename){
             return -1;
         }
     }
-    else if(file_type == 1){ 
+    else if(d.ft == 1){ 
         //set the f_op fields to directory
         for (i=2; i<8; i++){ //for entire file array
             if(pcb->file_desc_tb[i].flag == 0){  //if entry dne
@@ -281,7 +284,7 @@ int32_t sys_open (const uint8_t* filename){
             return -1;
         }
     }
-    else if(file_type == 2){
+    else if(d.ft == 2){
         //set the f_op fields to regular file
         for (i=2; i<8; i++){ //for entire file array
             if(pcb->file_desc_tb[i].flag == 0){  //if entry dne
@@ -289,7 +292,7 @@ int32_t sys_open (const uint8_t* filename){
                 pcb->file_desc_tb[i].f_op = &file_op_table;
                 pcb->file_desc_tb[i].flag=1;
                 pcb->file_desc_tb[i].file_position=0;
-                pcb->file_desc_tb[i].inode=get_inode(filename);
+                pcb->file_desc_tb[i].inode = d.ind;
                 break;
             }
         }
@@ -316,9 +319,10 @@ int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes){
     // }
 
     pcb_t * pcb = get_pcb();
-//add values for fd ==0 and fd ==1
+	int32_t valid;
+	//add values for fd ==0 and fd ==1
     if(fd > 1){ //this means it is an RTC device
-        int32_t valid = (pcb->file_desc_tb[fd].f_op)->write(fd, buf, nbytes);
+        valid = (pcb->file_desc_tb[fd].f_op)->write(fd, buf, nbytes);
         if(valid != -1){
             return nbytes; //this should be fine??
         }
@@ -330,11 +334,8 @@ int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes){
     }
     else if (fd ==1){
         //stdout write-only for terminal output
-         int32_t valid = (pcb->file_desc_tb[fd].f_op)->write(fd, buf, nbytes);
-         if(valid != -1){
-            return valid; //this should be fine.
-        }
-        return -1;
+        valid = (pcb->file_desc_tb[fd].f_op)->write(fd, buf, nbytes);
+        return valid;
     }
     return -1;
 }
@@ -350,7 +351,7 @@ int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes){
 int32_t sys_read (int32_t fd, void* buf, int32_t nbytes){
     pcb_t * pcb = get_pcb();
     int32_t valid;
-    if(fd > 1){
+    /*if(fd > 1){
         valid = (pcb->file_desc_tb[fd].f_op)->read(fd, buf, nbytes);
         if(valid != -1){
             //pcb->file_desc_tb[fd].file_position += valid; //changed from nbytes to valid
@@ -364,11 +365,13 @@ int32_t sys_read (int32_t fd, void* buf, int32_t nbytes){
             //pcb->file_desc_tb[fd].file_position += valid; //changed from nbytes to valid
             return valid;
         }
-    }
-    else if(fd ==1){
+    }*/
+
+    if(fd == 1){
         return -1;
     }
-    return -1;
+	valid = (pcb->file_desc_tb[fd].f_op)->read(fd, buf, nbytes);
+    return valid;
 }
 
 /*
