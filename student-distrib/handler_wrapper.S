@@ -310,5 +310,8 @@ syscall_wrapper:
     .long 0x0, sys_halt, sys_execute, sys_read, sys_write, sys_open, sys_close
 
 
-
+# halt_wrapper:
+#     movsbl %bl, %ebx
+#     movl %ebx, (%esp)
+#     jmp sys_halt
 

@@ -24,6 +24,8 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     if (nbytes > 128) nbytes = 128;
     //char temp_buffer[128] = {0};
 
+    sti();
+
     // while(keyboard_buffer[0] == '\0');
     i = 0;
     while(!enterpress);
@@ -58,6 +60,9 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     // add newline character to the end of the buffer
     // *((char*)buf + i + 1) = '\n';
     // sti();
+
+    cli();
+    
     return i + 1;
 }
 
