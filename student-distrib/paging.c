@@ -89,7 +89,7 @@ void page_init()
 	spawnDir();
 	pageDir[0] = vidTable;
 	pageDir[1] = kernel;
-	vidTable.val = (unsigned)table | 7;
+	vidTable.ptr.us = 1;
 	pageDir[33] = vidTable;
 	pageEnable();
 	return;

@@ -55,7 +55,7 @@ struct file_desc
 } __attribute__((packed));
 
 /* Struct for the PCB */
-typedef struct pcb_t {
+typedef struct pcb {
     struct file_desc file_desc_tb[8];   // file descriptor array
     uint8_t args[128];                  // arguments
     uint32_t pid;
