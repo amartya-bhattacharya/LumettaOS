@@ -68,22 +68,14 @@ pcb_t* get_pcb() {
  * INPUTS: fname (file name)
  * OUTPUTS: returns file type, returns -1 if invalid  
  */
-int32_t get_filetype(const uint8_t* fname){
-	/*int i;
-	for(i = 0;i < boot->nent;i++)	//iterate through dentries
-	{
-		if(strncmp((int8_t*)fname, (int8_t*)(boot->dirs[i].name), 32) == 0)	//maximum size of a filename 
-		{
-			return boot->dirs[i].ft;
-		}
-	}*/
+/*int32_t get_filetype(const uint8_t* fname){
 	struct dentry d;
 	
 	if(read_dentry_by_name(fname, &d))
 		return -1;
 	
 	return (int32_t)d.ft;
-}
+}*/
 
 /*
  * get inode
@@ -91,20 +83,12 @@ int32_t get_filetype(const uint8_t* fname){
  * INPUTS: fname (file name)
  * OUTPUTS: returns inode, returns -1 if invalid  
  */
-int32_t get_inode(const uint8_t* fname){
-	/*int i;
-	for(i = 0;i < boot->nent;i++)	//iterate through dentries
-	{
-		if(strncmp((int8_t*)fname, (int8_t*)(boot->dirs[i].name), 32) == 0)	//maximum size of a filename 
-		{
-			return boot->dirs[i].ind;
-		}
-	}*/
+/*int32_t get_inode(const uint8_t* fname){
 	struct dentry d;
 	if(read_dentry_by_name(fname, &d))
 		return -1;
 	return d.ind;
-}
+}*/
 /*
  * Changes dent to be that of corresponding filename
  * Inputs: filename, dentry
@@ -210,7 +194,7 @@ int32_t dir_read(int32_t fd, void* buf, int32_t n)
 			break;
 		}
 	}
-	return 0;
+	return i;
 }
 
 /*

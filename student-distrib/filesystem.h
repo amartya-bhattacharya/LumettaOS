@@ -69,9 +69,9 @@ extern pcb_t* curr_pcb[6];
 
 pcb_t* get_pcb();
 
-int32_t get_filetype(const uint8_t* fname);
+//int32_t get_filetype(const uint8_t* fname);
 
-int32_t get_inode(const uint8_t* fname);
+//int32_t get_inode(const uint8_t* fname);
 
 int32_t read_dentry_by_name(const uint8_t* fname, struct dentry* dent);
 
