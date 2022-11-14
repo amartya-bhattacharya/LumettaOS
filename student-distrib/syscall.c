@@ -430,3 +430,36 @@ int32_t sys_getargs (uint8_t* buf, int32_t nbytes){
 
     return 0;
 }
+
+/*vidmap
+*DESCRIPTION: call maps the text-mode video memory into user space at a pre-set virtual address
+*INPUTS: screen start is pointer to variable in user memory 
+*OUTPUTS: If screen start is inside user space then set it to user space vid_meme, if out of user space return -1.
+*SIDE EFFECTS: sets screen start to a virtual address
+*/
+int32_t sys_vidmap (uint8_t** screen_start){
+    if(((uint32_t)screen_start) < _128MB || ((uint32_t)screen_start) > _132MB)
+        return -1;
+    *screen_start = (uint8_t*)(_4MB * 33 + 0xB8000);    //0xB8000 is vidmem from lib.c
+    return 0;
+}
+
+/*set_handler
+*DESCRIPTION: does nothing
+*INPUTS: signum and handler address in argument
+*OUTPUTS: return -1.
+*SIDE EFFECTS: NONE
+*/
+int32_t sys_sethandler (int32_t signum, void* handler_address){
+    return -1;
+}
+
+/*sigreturn
+*DESCRIPTION: does nothing
+*INPUTS: NONE
+*OUTPUTS: return -1.
+*SIDE EFFECTS: NONE
+*/
+int32_t sys_sigreturn (void){
+    return -1;
+}
