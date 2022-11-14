@@ -3,6 +3,31 @@
 
 #define ASM     1
 
+
+.globl setup_context_switch
+.align 4
+setup_context_switch:
+    pushl %ebp
+    movl %esp, %ebp
+
+    movl 8(%esp), %edx   # esp
+    movl 12(%esp), %ecx  # eip
+    movl %ecx, %ebx
+
+    pushl $0x002B         # User DS
+    pushl %edx            # User ESP
+    pushfl                # User EFLAGS
+    popl %edx
+    orl $0x200, %edx      # Set IF
+    pushl %edx            # User EFLAGS
+    pushl $0x0023         # User CS
+    pushl %ecx            # User EIP
+
+    iret
+    movl %ebp, %esp
+    popl %ebp
+    ret
+
 # wrapper for keyboard interrupt handler
 .globl keyboard_handler_wrapper
 .align 4
@@ -21,6 +46,21 @@ rtc_handler_wrapper:
     pushal
     pushfl
     call rtc_handler
+    popfl
+    popal
+    iret
+
+# wrapper for general protection fault handler
+.globl gp_handler_wrapper
+.align 4
+gp_handler_wrapper:
+    pushal  #4 bytes * 8 registers
+    pushfl  #4 bytes
+    movl %cr2, %eax
+    pushl %eax  #4 bytes
+    pushl 40(%esp)
+    call GP
+    addl $8, %esp;
     popfl
     popal
     iret
@@ -180,17 +220,6 @@ ss_handler_wrapper:
     pushal
     pushfl
     call SS
-    popfl
-    popal
-    iret
-
-# wrapper for rtc interrupt handler
-.globl gp_handler_wrapper
-.align 4
-gp_handler_wrapper:
-    pushal
-    pushfl
-    call GP
     popfl
     popal
     iret

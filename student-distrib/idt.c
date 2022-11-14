@@ -182,9 +182,10 @@ void SS()
 }
 
 
-void GP()
+void GP(int32_t arg, void* addr)
 {
-    printf("General Protection");
+    // printf("General Protection");
+    printf("GP Fault exception code is %d attempting to access %x\n", arg, (int)addr);
     while(1){}
     return;
 }
@@ -192,7 +193,7 @@ void GP()
 
 void PF(int32_t arg, void* addr)
 {
-    printf("\nPage Fault exception code is %d attempting to access %x\n", arg, (int)addr);
+    printf("Page Fault exception code is %d attempting to access %x\n", arg, (int)addr);
     while(1){}
     return;
 }
