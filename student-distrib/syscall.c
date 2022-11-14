@@ -353,7 +353,7 @@ int32_t sys_read (int32_t fd, void* buf, int32_t nbytes){
     if(fd > 1){
         valid = (pcb->file_desc_tb[fd].f_op)->read(fd, buf, nbytes);
         if(valid != -1){
-            pcb->file_desc_tb[fd].file_position += valid; //changed from nbytes to valid
+            //pcb->file_desc_tb[fd].file_position += valid; //changed from nbytes to valid
             return valid;
         }
         return -1;
@@ -361,7 +361,7 @@ int32_t sys_read (int32_t fd, void* buf, int32_t nbytes){
     else if (fd ==0){
         valid = (pcb->file_desc_tb[fd].f_op)->read(fd, buf, nbytes);
         if(valid != -1){
-            pcb->file_desc_tb[fd].file_position += valid; //changed from nbytes to valid
+            //pcb->file_desc_tb[fd].file_position += valid; //changed from nbytes to valid
             return valid;
         }
     }
