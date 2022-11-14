@@ -135,11 +135,40 @@ Solution:
                           BUG 11                          
 <--------------------------------------------------------->
 Time:
-    2022.11.??.
+    2022.11.13.
 Creator:
+    Natasha Sherlock
     
 Description:
+    testprint is calling the wrong syscall (open instead of write)
 
 Solution:
+    We forgot to add a NULL ptr to our jump table in out syscall handler wrapper
+
     
+
+<--------------------------------------------------------->
+                          BUG 12                          
+<--------------------------------------------------------->
+Time:
+    2022.11.14.
+Creator:
+    Vasilis Papanikolaou
+Description:
+    Page fault in execute context switch
+Solution:
+    The entry point was calculated correctly but we did not clear the signed extended values before bitshifting and concatinating
+
+
+<--------------------------------------------------------->
+                          BUG ?                          
+<--------------------------------------------------------->
+Time:
+    2022.11.14.
+Creator:
+    First Last.
+Description:
+    ....
+Solution:
+    ....
 

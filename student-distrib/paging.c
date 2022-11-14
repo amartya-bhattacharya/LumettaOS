@@ -90,7 +90,7 @@ void page_init()
 	pageDir[0] = vidTable;
 	pageDir[1] = kernel;
 	vidTable.ptr.us = 1;
-	pageDir[33] = vidTable;
+	pageDir[33] = vidTable; //33 is 132MB/4MB
 	pageEnable();
 	return;
 }
