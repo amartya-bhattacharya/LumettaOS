@@ -51,39 +51,36 @@ PCB is implemented*/
 int32_t sys_halt(uint8_t status) {
     union dirEntry d;
     pcb_t* pcb = get_pcb();
-
-	while(1) printf("halting\n");
-
-    if (pcb->pid < 3) { // don't halt the shell or the init process
-        return 0;
-    }
+    if (pcb->parent_pid == -1) while(1) printf("halt");
     
     // close all files
     int i;
-    for (i = 0; i < MAX_FILES; i++) curr_pcb[pcb->pid] -> file_desc_tb[0].flag = 0;
-    // TODO set the process to inactive
+    for (i = 0; i < MAX_FILES; i++) {
+        pcb->file_desc_tb[0].flag = 0;
+        pcb->active = 0;
+    }
 
-    // restore parent's paging      // TODO: check if this is correct. math was done in a hurry
-    uint32_t parent_pid = pcb->parent_pid;
+    // restore parent's paging
     d.val = 7;		//sets P and RW bits
-	d.whole.add_22_31 = (_8MB + _4MB * parent_pid) >> 22;
+    d.whole.ps = 1;
+	d.whole.add_22_31 = (_8MB + _4MB * pcb->parent_pid) >> 22;
 	chgDir(32, d);	//32 = 128 / 4 (all programs are in the 128-132 MiB vmem page
     flushTLB();
 
-    // TODO reset tss
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = _8MB - (parent_pid + 1) * _8KB;
-    // TODO jump to end of execute asm code (need to add the label); TODO add a leave and ret to the end
+    tss.esp0 = _8MB - (pcb->parent_pid) * _8KB - 4;
+
     asm volatile(
-        "movl %%ebx, %%esp;"
-        "movl %%edx, %%ebp;"
-        "movl %%ecx, %%eax;"
+        "movl %0, %%esp;"
+        "movl %1, %%ebp;"
+        "movsbl %2, %%eax;"
         "jmp execute_ret;"
         :
-        :"b"(pcb->saved_esp), "d"(pcb->saved_ebp), "c"(status)
+        :"r"(pcb->saved_esp), "r"(pcb->saved_ebp), "r"(status)
     );
-    return status;  // TODO check if this is correct, or if we need to return 0/-1
+    return status;
 }
+
 
 /*
  * system_execute
@@ -153,8 +150,6 @@ int32_t sys_execute(const uint8_t * command) {
 	chgDir(32, d);	//32 = 128 / 4 (all programs are in the 128-132 MiB vmem page)
 	flushTLB();
 
-    //entry_point = *(uint32_t *)(0x8048018);
-
     // put arguments in pcb
     strcpy((int8_t *)curr_pcb[pcb_index]->args, (const int8_t *)args);
 
@@ -164,7 +159,7 @@ int32_t sys_execute(const uint8_t * command) {
     // set up and load pcb (setup fd[0] and fd[1])
     curr_pcb[pcb_index]->pid = pcb_index;
     curr_pcb[pcb_index]->active = 1;
-    curr_pcb[pcb_index]->parent_pid = curr_pcb[pcb_index]->pid;     // might need to change this to a pointer to the parent pcb
+    curr_pcb[pcb_index]->parent_pid = curr_pcb[pcb_index]->pid - 1;
     curr_pcb[pcb_index]->saved_esp = _8MB - 1;
     curr_pcb[pcb_index]->file_desc_tb[0].flag = 1;
     curr_pcb[pcb_index]->file_desc_tb[0].f_op = &terminal_op_table;
@@ -173,13 +168,8 @@ int32_t sys_execute(const uint8_t * command) {
     for (i = 2; i < MAX_PROCESSES; i++) {
         curr_pcb[pcb_index]->file_desc_tb[i].flag = 0;
     }
+    
 
-    // TODO check if this is correct/needed
-    asm volatile(
-        "movl %%esp, %0;"
-        "movl %%ebp, %1;"
-        : "=r" (curr_pcb[pcb_index]->saved_esp), "=r" (curr_pcb[pcb_index]->saved_ebp)
-    );
     // 0x083FFFFC
     uint32_t user_sp = _132MB - 4;
 
@@ -197,12 +187,18 @@ int32_t sys_execute(const uint8_t * command) {
 	// 	: "=r" (tss.cr3)
 	// );
 
+    asm volatile(
+        "movl %%esp, %0;"
+        "movl %%ebp, %1;"
+        : "=r" (curr_pcb[pcb_index]->saved_esp), "=r" (curr_pcb[pcb_index]->saved_ebp)
+    );
+    
     // context switch
     asm volatile(
         "movw %0, %%ax;"
         "movw %%ax, %%ds;"
         "pushl %0;"     // push kernel ds  
-        "pushl %1;"   // push esp
+        "pushl %1;"   // push user sp
         "pushfl;"       // push eflags
         "popl %%edx;"    // pop eflags
         "orl $0x200, %%edx;"     // set IF bit
@@ -334,7 +330,7 @@ int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes){
         //stdout write-only for terminal output
          int32_t valid = (pcb->file_desc_tb[fd].f_op)->write(fd, buf, nbytes);
          if(valid != -1){
-            return nbytes; //this should be fine.
+            return valid; //this should be fine.
         }
         return -1;
     }
