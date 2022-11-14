@@ -23,15 +23,17 @@ pcb_t* curr_pcb[6] =
 
 //address of bootblock which is also address of start of filesystem
 static struct bootblock* boot;
-
+/*
+ * The next 3 variables were used before the implementation of pcb
+ */
 //inode number for current file
-static uint32_t file[8] = {0, 0, 64, 64, 64, 64, 64, 64};	//64 is always out of bounds
+//static uint32_t file[8] = {0, 0, 64, 64, 64, 64, 64, 64};	//64 is always out of bounds
 
 //array that shows available files
-static uint8_t avlfiles = 0xFC;
+//static uint8_t avlfiles = 0xFC;
 
 //saves amount of bytes already read in a file
-static uint32_t offset[8];
+//static uint32_t offset[8];
 
 //saves index of last accessed directory
 static uint32_t dnum;
@@ -231,15 +233,16 @@ int32_t file_open(const uint8_t* fn)
 {
 	struct dentry d;
 	int32_t i;
+	pcb_t* p = get_pcb();
 	if(read_dentry_by_name(fn, &d))
 		return -1;
 	for(i = 2;i < 8;i++)
 	{
-		if(avlfiles & (0x1 << i))
+		if(p->file_desc_tb[i].flag == 0)
 		{
-			avlfiles &= ~(0x1 << i);	//unsets bit to make file not available any more
-			file[i] = d.ind;
-			offset[i] = 0;
+			p->file_desc_tb[i].flag = 1;
+			p->file_desc_tb[i].file_position = 0;
+			p->file_desc_tb[i].inode = d.ind;
 			return i;
 		}
 	}
@@ -253,10 +256,12 @@ int32_t file_open(const uint8_t* fn)
  */
 int32_t file_read(int32_t fd, void* buf, int32_t n)
 {
+	pcb_t* p = get_pcb();
 	if(fd > 7)
 		return -1;
-	n = read_data(file[fd], offset[fd], (uint8_t*)buf, n);
-	offset[fd] += n;
+	n = read_data(p->file_desc_tb[fd].inode, p->file_desc_tb[fd].file_position,
+		(uint8_t*)buf, n);
+	p->file_desc_tb[fd].file_position += n;
 	return n;
 }
 
@@ -274,10 +279,9 @@ int32_t file_write(int32_t fd, const void* buf, int32_t n)
  */
 int32_t file_close(int32_t fd)
 {
+	pcb_t* p = get_pcb();
 	if(fd > 7 || fd < 2)
 		return -1;
-	file[fd] = 64;	//sets file to something out of bounds
-	offset[fd] = 0;
-	avlfiles |= 0x1 << fd;	//makes file available again
+	p->file_desc_tb[fd].flag = 0;
 	return 0;
 }
