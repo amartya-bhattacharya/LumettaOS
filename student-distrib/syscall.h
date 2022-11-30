@@ -17,7 +17,7 @@
 #define _4MB 0x00400000
 #define _8KB 0x00002000
 #define _4KB 0x00001000
-#define MASK_8KB 0xFFFFE000
+#define MAX_CMD_LEN 32
 #define MAX_PROCESSES 6
 #define MAX_FILES 8
 #define USER_STACK_POINTER 

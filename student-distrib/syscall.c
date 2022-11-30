@@ -59,8 +59,12 @@ int32_t sys_halt(uint8_t status) {
         pcb->active = 0;
     }
 
-    if (pcb->parent_pid == -1) 
-        goto endof_halt;
+    // printf("halt: pid: %d, parent pid: %d\n", pcb->pid, pcb->parent_pid);
+    if (pcb->parent_pid == -1) {
+        pcb->pid--;
+        clear_term();
+        sys_execute((uint8_t*)"shell");
+    }
     
     // restore parent's paging
     d.val = 7;		//sets P and RW bits
@@ -72,8 +76,6 @@ int32_t sys_halt(uint8_t status) {
     tss.ss0 = KERNEL_DS;
     tss.esp0 = _8MB - (pcb->parent_pid) * _8KB - 4; //subtract 4 for padding
 
-    endof_halt:
-//pass in args
     asm volatile(
         "movl %0, %%esp;"
         "movl %1, %%ebp;"
@@ -82,6 +84,7 @@ int32_t sys_halt(uint8_t status) {
         :
         :"r"(pcb->saved_esp), "r"(pcb->saved_ebp), "r"(status)
     );
+    
     return status;
 }
 
@@ -93,8 +96,8 @@ int32_t sys_halt(uint8_t status) {
  * OUTPUTS: returns 0 if successful, returns -1 if program isn't executable
  */
 int32_t sys_execute(const uint8_t * command) {
-    uint8_t command_name[32] = {0};     // first word of the command
-    uint32_t args[128] = {0}; //args buffer is 128 in length including null char
+    uint8_t command_name[MAX_CMD_LEN] = {0};     // first word of the command
+    uint8_t args[128] = {0}; //args buffer is 128 in length including null char
     uint8_t exe[40] = {0};  // header occupies first 40 bytes of the file
     struct dentry command_dentry;
     uint32_t command_inode;
@@ -112,15 +115,15 @@ int32_t sys_execute(const uint8_t * command) {
 
     // check if command is quit terminal
     if (strncmp((int8_t*)command_name, "quit", 4) == 0) { //4 bytes long string
-        return sys_halt(0);
+        (void)sys_halt(0);
     }
     // check rest of command for arguments
     if (command[i] == ' ') {
-        i++;
+        while (command[i] == ' ') i++;  // skip over spaces
         int j = 0;
-        while (command[i] != '\n' && i < 128) { //for the length of the buffer
-            args[j] = command[i];
-            i++;
+        while (command[i + j] != '\n' && command[i + j] != '\0' && i + j < 128) { //for the length of the buffer
+            args[j] = command[i + j];
+            // printf("args: %s\n", args[0]);
             j++;
         }
     }
@@ -128,7 +131,6 @@ int32_t sys_execute(const uint8_t * command) {
     if (read_dentry_by_name(command_name, &command_dentry))
         return -1; // read failed
 
-    // TODO check dentry file descriptor
     if (command_dentry.ft != 2)     //file desc type
         return -1; // not a file
     
@@ -139,12 +141,15 @@ int32_t sys_execute(const uint8_t * command) {
     if (strncmp((int8_t *) exe, (int8_t *) check_exe, 4))   //4 bytes
         return -1; // not an executable
 
-    //entry_point = ((exe[27]) << 24) | ((exe[26]) << 16) | ((exe[25]) << 8) | (exe[24]); // get entry point from ELF header
+    // get entry point from ELF header
     entry_point = (((uint32_t)(exe[24]) & 0xFF) + (((uint32_t)(exe[25]) & 0xFF) << 8) + (((uint32_t)(exe[26]) & 0xFF) << 16) + (((uint32_t)(exe[27]) & 0xFF) << 24)); //bits [24:27] of executable contain EIP
     // find first active pcb
 	int pcb_index = 0;
 	while (pcb_index < MAX_PROCESSES && curr_pcb[pcb_index]->active) pcb_index++;
 	if (pcb_index == MAX_PROCESSES) return -1;  // no available pcb's
+
+    // put arguments in pcb
+    strcpy((int8_t *)curr_pcb[pcb_index]->args, (const int8_t *)args);
 
     // set up paging for the program (flush TLB)
 	d.val = 7;		//sets P, RW, and US bits 0b111
@@ -152,9 +157,6 @@ int32_t sys_execute(const uint8_t * command) {
 	d.whole.add_22_31 = (_8MB + _4MB * pcb_index) >> 22; 
 	chgDir(32, d);	//32 = 128 / 4 (all programs are in the 128-132 MiB vmem page)
 	flushTLB();
-
-    // put arguments in pcb
-    strcpy((int8_t *)curr_pcb[pcb_index]->args, (const int8_t *)args);
 
     // load in data
 	read_data(command_inode, 0, (uint8_t *)(_128MB + PROC_OFFSET), KERNEL_STACK_BOTTOM);
@@ -171,6 +173,9 @@ int32_t sys_execute(const uint8_t * command) {
     for (i = 2; i < MAX_PROCESSES; i++) {
         curr_pcb[pcb_index]->file_desc_tb[i].flag = 0;
     }
+
+    // print pid and parent pid
+    // printf("execute: pid: %d, parent pid: %d\n", curr_pcb[pcb_index]->pid, curr_pcb[pcb_index]->parent_pid);
     
 
     // 0x083FFFFC
@@ -405,30 +410,35 @@ int32_t sys_close (int32_t fd){
 *SIDE EFFECTS: initialize the shell task’s argument data to the empty string
 */
 int32_t sys_getargs (uint8_t* buf, int32_t nbytes){
+    if (buf == NULL || nbytes <= 0){
+        return -1;
+    }
+
     pcb_t * pcb = get_pcb();
-    int i;
-    int flag = 0;
-
-    if (buf == NULL || nbytes < 0){
-        return -1;
-    }
-
-    if (pcb->args[0] == 0){
-        return -1;
-    }
     
-    for(i = 0; i < 128; i++ ){  //for all of argument array
-        if(pcb->args[i] == '\0'){
-            flag = 1;
-            break;
-        }
-    }
+    // int i;
+    // int flag = 0;
 
-     if(nbytes> 128 || flag == 0  ){ //if greater than argument array
+    // if (pcb->args[0] == 0){     // TODO double check this
+    //     return -1;
+    // }
+    
+    // for (i = 0; i < 128; i++ ){  //for all of argument array
+    //     if(pcb->args[i] == '\0'){
+    //         flag = 1;
+    //         break;
+    //     }
+    // }
+
+    if (*pcb->args == '\0'){
         return -1;
     }
 
-    strncpy((int8_t *) buf, (const int8_t *) pcb->args, nbytes);
+    if (nbytes < strlen((int8_t*)pcb->args + 1)) {
+        return -1;
+    }
+    printf("args: %s\n", pcb->args);
+    memcpy((void *) buf, (void *) pcb->args, nbytes);
 
     return 0;
 }
