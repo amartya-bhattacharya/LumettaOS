@@ -175,7 +175,7 @@ int32_t sys_execute(const uint8_t * command) {
     }
 
     // print pid and parent pid
-    // printf("execute: pid: %d, parent pid: %d\n", curr_pcb[pcb_index]->pid, curr_pcb[pcb_index]->parent_pid);
+    printf("execute: pid: %d, parent pid: %d\n", curr_pcb[pcb_index]->pid, curr_pcb[pcb_index]->parent_pid);
     
 
     // 0x083FFFFC
@@ -383,21 +383,21 @@ int32_t sys_read (int32_t fd, void* buf, int32_t nbytes){
  * sys_close
  * DESCRIPTION: closes and makes specific file descriptor available 
  * INPUTS: the file descriptor
- * OUTPUTS: sets all elements in file descriptor to uninitialized valuesand  returns 0
+ * OUTPUTS: sets all elements in file descriptor to uninitialized values and returns 0
  */
 int32_t sys_close (int32_t fd){
     pcb_t * pcb = get_pcb();
 
-    if(fd == 1 || fd == 0)
+    if (fd <= 1 || fd >= 8)
         return -1;
 
     pcb->file_desc_tb[fd].f_op->close(fd);
-    pcb->file_desc_tb[fd].f_op->close = NULL;
-    pcb->file_desc_tb[fd].f_op->read = NULL;
-	pcb->file_desc_tb[fd].f_op->write = NULL;
-	pcb->file_desc_tb[fd].f_op->open = NULL;
-    pcb->file_desc_tb[fd].inode = 0;
-    pcb->file_desc_tb[fd].file_position = 0;
+    // pcb->file_desc_tb[fd].f_op->close = NULL;
+    // pcb->file_desc_tb[fd].f_op->read = NULL;
+	// pcb->file_desc_tb[fd].f_op->write = NULL;
+	// pcb->file_desc_tb[fd].f_op->open = NULL;
+    // pcb->file_desc_tb[fd].inode = 0;
+    // pcb->file_desc_tb[fd].file_position = 0;
     pcb->file_desc_tb[fd].flag = 0; 
 
     return 0;
@@ -434,7 +434,7 @@ int32_t sys_getargs (uint8_t* buf, int32_t nbytes){
         return -1;
     }
 
-    if (nbytes < strlen((int8_t*)pcb->args + 1)) {
+    if (nbytes <= strlen((int8_t*)pcb->args)) {
         return -1;
     }
     printf("args: %s\n", pcb->args);
