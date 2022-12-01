@@ -325,8 +325,12 @@ int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes){
 
     pcb_t * pcb = get_pcb();
 	int32_t valid;
+
+    if (pcb->file_desc_tb[fd].flag == 0){
+        return -1;
+    }
 	//add values for fd ==0 and fd ==1
-    if(fd > 1){ //this means it is an RTC device
+    if(fd > 1 && fd <=7 ){ //this means it is an RTC device
         valid = (pcb->file_desc_tb[fd].f_op)->write(fd, buf, nbytes);
         if(valid != -1){
             return nbytes; //this should be fine??
@@ -371,10 +375,21 @@ int32_t sys_read (int32_t fd, void* buf, int32_t nbytes){
             return valid;
         }
     }*/
+    if (fd<0){
+        return -1;
+    }
 
     if(fd == 1){
         return -1;
     }
+    if (fd > 7){
+        return -1;
+    }
+
+    if (pcb->file_desc_tb[fd].flag == 0){
+        return -1;
+    }
+
 	valid = (pcb->file_desc_tb[fd].f_op)->read(fd, buf, nbytes);
     return valid;
 }
@@ -391,6 +406,9 @@ int32_t sys_close (int32_t fd){
     if (fd <= 1 || fd >= 8)
         return -1;
 
+    if (pcb->file_desc_tb[fd].flag == 0){
+        return -1;
+    }
     // pcb->file_desc_tb[fd].f_op->close(fd);
     // pcb->file_desc_tb[fd].f_op->close = NULL;
     // pcb->file_desc_tb[fd].f_op->read = NULL;
@@ -423,14 +441,14 @@ int32_t sys_getargs (uint8_t* buf, int32_t nbytes){
     //     return -1;
     // }
     
-    // for (i = 0; i < 128; i++ ){  //for all of argument array
-    //     if(pcb->args[i] == '\0'){
+    // for (i = 0; i < strlen((int8_t*)pcb->args +1; i++ ){  //for all of argument array
+    //     if(pcb->args[i] == 0){
     //         flag = 1;
     //         break;
     //     }
     // }
 
-    if (*pcb->args == '\0'){
+    if (*(pcb->args) == '\0'){
         return -1;
     }
 

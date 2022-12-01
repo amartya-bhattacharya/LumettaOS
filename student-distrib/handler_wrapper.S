@@ -288,8 +288,10 @@ syscall_wrapper:
     pushl %edx
     pushl %ecx
     pushl %ebx
-    cmpl $8, %eax
+    cmpl $9, %eax
     ja invalid
+    cmpl $0, %eax
+    jle invalid
     call *sys_call_table(, %eax, 4)
     movl %eax, eax_mem
     popl %ebx       #pop all registers
