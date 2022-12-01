@@ -175,7 +175,7 @@ int32_t sys_execute(const uint8_t * command) {
     }
 
     // print pid and parent pid
-    printf("execute: pid: %d, parent pid: %d\n", curr_pcb[pcb_index]->pid, curr_pcb[pcb_index]->parent_pid);
+    // printf("execute: pid: %d, parent pid: %d\n", curr_pcb[pcb_index]->pid, curr_pcb[pcb_index]->parent_pid);
     
 
     // 0x083FFFFC
@@ -391,7 +391,7 @@ int32_t sys_close (int32_t fd){
     if (fd <= 1 || fd >= 8)
         return -1;
 
-    pcb->file_desc_tb[fd].f_op->close(fd);
+    // pcb->file_desc_tb[fd].f_op->close(fd);
     // pcb->file_desc_tb[fd].f_op->close = NULL;
     // pcb->file_desc_tb[fd].f_op->read = NULL;
 	// pcb->file_desc_tb[fd].f_op->write = NULL;
@@ -437,7 +437,7 @@ int32_t sys_getargs (uint8_t* buf, int32_t nbytes){
     if (nbytes <= strlen((int8_t*)pcb->args)) {
         return -1;
     }
-    printf("args: %s\n", pcb->args);
+    // printf("args: %s\n", pcb->args);
     memcpy((void *) buf, (void *) pcb->args, nbytes);
 
     return 0;

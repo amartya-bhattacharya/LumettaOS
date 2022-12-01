@@ -23,8 +23,16 @@
 #define RTC_BASE_RATE   15
 #define RTC_MAX_RATE    6
 
-/* Externally-visible functions */
+/* RTC frequencies */
+#define RTC_BASE_FREQ   2
+#define RTC_MAX_FREQ    1024
 
+/* for testing */
+#define RTC_TEST_EN 0
+
+/* Externally-visible functions */
+/* Set the RTC rate to the given frequency */
+void rtc_set_rate(uint32_t freq);
 /* Initialize the RTC */
 void rtc_init(void);
 /* Read from the RTC */
