@@ -27,12 +27,10 @@
 #define RTC_BASE_FREQ   2
 #define RTC_MAX_FREQ    1024
 
-/* for testing */
-#define RTC_TEST_EN 0
+/* for virtualization */
+#define RTC_VT_EN 1
 
 /* Externally-visible functions */
-/* Set the RTC rate to the given frequency */
-void rtc_set_rate(uint32_t freq);
 /* Initialize the RTC */
 void rtc_init(void);
 /* Read from the RTC */
@@ -42,11 +40,11 @@ int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes);
 /* Reset the RTC frequency */
 int32_t rtc_open(const uint8_t* filename);
 /* Close the RTC */
-int32_t rtc_close(int32_t fd);  // TODO do I need this?
+int32_t rtc_close(int32_t fd);
 /* RTC interrupt handler */
-void rtc_handler(void);
+extern void rtc_handler(void);
 /* Wrapper function for RTC handler */
-void rtc_handler_wrapper();
+extern void rtc_handler_wrapper();
 
 extern int interrupt_count;
 extern int i_rtc;
