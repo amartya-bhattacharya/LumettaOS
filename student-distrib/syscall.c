@@ -267,6 +267,7 @@ int32_t sys_open (const uint8_t* filename){
                 pcb->file_desc_tb[i].f_op = &rtc_op_table;
                 pcb->file_desc_tb[i].flag=1;
                 pcb->file_desc_tb[i].file_position=0;
+                (pcb->file_desc_tb[i].f_op)->open(filename);
                 break;
             }
         }

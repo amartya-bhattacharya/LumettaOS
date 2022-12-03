@@ -10,7 +10,7 @@
 /* Local variables */
 volatile int rtc_interrupt_occurred = 0;    // flag for RTC interrupt
 volatile int rtc_counter = 0; // counter for RTC interrupts
-int rtc_max_count = RTC_MAX_FREQ / RTC_BASE_FREQ; // max number of interrupts before RTC interrupt occurs
+volatile int rtc_max_count = RTC_MAX_FREQ / RTC_BASE_FREQ; // max number of interrupts before RTC interrupt occurs
 
 /* Local functions */
 /* Set the RTC rate to the given frequency */
@@ -64,10 +64,11 @@ void rtc_init(void) {
     #if RTC_VT_EN
     rtc_max_count = RTC_MAX_FREQ / RTC_BASE_FREQ;   /* set the max count to the default frequency */
     rtc_set_rate(RTC_MAX_FREQ);         /* set the frequency to 1024 Hz */
+    #else
+    rtc_set_rate(RTC_BASE_FREQ);
     #endif
     enable_irq(RTC_IRQ);                /* enable interrupts */
     sti();
-    
 }
 
 
@@ -102,14 +103,18 @@ int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes) {
     if (buf == NULL || nbytes != 4)
         return -1;                          /* if the buffer is NULL, or not a 4-byte value, the call returns -1 */
 
-    uint32_t freq;
-    if (!(freq = rtc_set_rate(*(uint32_t*)buf)))    /* if the frequency is invalid, return -1 */
+    uint32_t freq = *(uint32_t*)buf;
+
+    if (!(freq >= 2 && freq <= 1024 && ((freq - 1) & freq) == 0))
         return -1;
 
     #if RTC_VT_EN
-    cli();
+    // cli();
     rtc_max_count = RTC_MAX_FREQ / freq;    /* set the max count to the requested frequency */
-    sti();
+    rtc_counter = 0;
+    // sti();
+    #else
+    rtc_set_rate(freq);
     #endif
     return nbytes;
 }
@@ -161,14 +166,12 @@ int32_t rtc_close(int32_t fd) {
  * SIDE EFFECTS: Sends an EOI to the RTC
  */
 void rtc_handler(void) {
-    cli();                                  /* disable interrupts */
-    outb(RTC_REG_C, RTC_PORT);              /* select register C */
-    inb(RTC_DATA);                          /* just throw away contents */
+    // cli();                                  /* disable interrupts */
 
     #if RTC_VT_EN
     rtc_counter++;                          /* increment the counter */
     // printf("RTC: %d", rtc_counter);
-    if (rtc_counter == rtc_max_count) {     /* if the counter reaches the max count */
+    if (rtc_counter >= rtc_max_count) {     /* if the counter reaches the max count */
         rtc_interrupt_occurred = 1;         /* set the status to closed */
         // printf("INTERRUPT\n");
         rtc_counter = 0;                    /* reset the counter */
@@ -177,6 +180,9 @@ void rtc_handler(void) {
     rtc_interrupt_occurred = 1;             /* set the status to closed */
     #endif
 
+    outb(RTC_REG_C, RTC_PORT);              /* select register C */
+    inb(RTC_DATA);                          /* just throw away contents */
+
     send_eoi(RTC_IRQ);                      /* send EOI */
-    sti();                                  /* enable interrupts */
+    // sti();                                  /* enable interrupts */
 }
