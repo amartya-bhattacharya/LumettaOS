@@ -1,16 +1,16 @@
-// /* scheduling.h - Defines for scheduling
-//  * vim:ts=4 sw=4 noexpandtab
-//  */
+/* scheduling.h - Defines for scheduling
+ * vim:ts=4 sw=4 noexpandtab
+ */
 
-// #ifndef _SCHEDULING_H
-// #define _SCHEDULING_H
+#ifndef _SCHEDULING_H
+#define _SCHEDULING_H
 
-// #include "types.h"
+#include "types.h"
 
-// /* Externally visible variables */
-// extern int32_t current_terminal;    // current display
-// extern int32_t current_process;
-// extern int32_t current_process_pid[3];
+/* Externally visible variables */
+extern int32_t current_terminal;    // current display
+extern int32_t current_process;
+extern int32_t current_process_pid[3];
 
 // /* Externally visible functions */
 // extern void init_scheduling(void);  // set up shells
@@ -24,4 +24,4 @@
 
 // void asynchronous_task_switch(int new_display);
 
-// #endif /* _SCHEDULING_H */
+#endif /* _SCHEDULING_H */
