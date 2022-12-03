@@ -53,7 +53,7 @@ int rtc_set_rate(uint32_t freq) {
  * INPUTS: none
  * OUTPUTS: none
  * RETURN VALUE: none
- * SIDE EFFECTS: Enables the RTC, sets the frequency to the default
+ * SIDE EFFECTS: Enables the RTC, sets the frequency to the 1024 Hz
  */
 void rtc_init(void) {
     cli();                              /* disable interrupts */
@@ -65,7 +65,7 @@ void rtc_init(void) {
     rtc_max_count = RTC_MAX_FREQ / RTC_BASE_FREQ;   /* set the max count to the default frequency */
     rtc_set_rate(RTC_MAX_FREQ);         /* set the frequency to 1024 Hz */
     #else
-    rtc_set_rate(RTC_BASE_FREQ);
+    rtc_set_rate(RTC_BASE_FREQ);        /* set the frequency to 2 Hz */
     #endif
     enable_irq(RTC_IRQ);                /* enable interrupts */
     sti();
@@ -109,15 +109,16 @@ int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes) {
         return -1;
 
     #if RTC_VT_EN
-    // cli();
+    cli();
     rtc_max_count = RTC_MAX_FREQ / freq;    /* set the max count to the requested frequency */
     rtc_counter = 0;
-    // sti();
+    sti();
     #else
     rtc_set_rate(freq);
     #endif
     return nbytes;
 }
+
 
 /*
  * rtc_open
@@ -157,6 +158,7 @@ int32_t rtc_close(int32_t fd) {
     return 0;
 }
 
+
 /*
  * rtc_handler
  * DESCRIPTION: Handles the RTC interrupt
@@ -166,14 +168,12 @@ int32_t rtc_close(int32_t fd) {
  * SIDE EFFECTS: Sends an EOI to the RTC
  */
 void rtc_handler(void) {
-    // cli();                                  /* disable interrupts */
+    cli();                                  /* disable interrupts */
 
     #if RTC_VT_EN
     rtc_counter++;                          /* increment the counter */
-    // printf("RTC: %d", rtc_counter);
     if (rtc_counter >= rtc_max_count) {     /* if the counter reaches the max count */
         rtc_interrupt_occurred = 1;         /* set the status to closed */
-        // printf("INTERRUPT\n");
         rtc_counter = 0;                    /* reset the counter */
     }
     #else
@@ -184,5 +184,5 @@ void rtc_handler(void) {
     inb(RTC_DATA);                          /* just throw away contents */
 
     send_eoi(RTC_IRQ);                      /* send EOI */
-    // sti();                                  /* enable interrupts */
+    sti();                                  /* enable interrupts */
 }
