@@ -22,9 +22,17 @@ void sched_init(void) {
 
 void switchterm(int32_t t)
 {
+	char* byte;
+	char* save = (char*)(0xB8 + (0xC0 - 0xB8) * (curterm + 1));
 	cli();
+	//printf("switching terms");
+	//while(1);
+	for(byte = (char*)0xB8;byte < (char*)0xC0;byte++)
+	{	//save vid buffer for terminal
+		*save = *byte;
+		save++;
+	}
 	curterm = t;
-	clear_term();
 	if(procpid[t] < 0)
 	{	//when first opening the other terms they'll have no program
 		sys_execute((uint8_t*)"shell");

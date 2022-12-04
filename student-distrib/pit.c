@@ -20,8 +20,6 @@ void pit_init(void) {
 }
 
 void pit_handler(void) {
-    send_eoi(PIT_IRQ);                      /* Send EOI */
-    cli();
     
     // task switching steps
     // 1. save esp and ebp
@@ -58,5 +56,5 @@ void pit_handler(void) {
         :"r"(pcb->saved_esp), "r"(pcb->saved_ebp)
     );
 
-    sti();
+    send_eoi(PIT_IRQ);                      /* Send EOI */
 }

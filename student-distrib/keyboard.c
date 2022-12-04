@@ -225,7 +225,23 @@ void keyboard_handler(void) {
             // check Ctrl+L
             if (key_status & 0x04 && scancode == 0x26) {
                 clear_term();                    // clear screen
-            } else {
+            }
+			else if(key_status & 0x38 && scancode == 0x3B)
+			{
+				if(curterm != 0)
+					switchterm(0);
+			}
+			else if(key_status & 0x38 && scancode == 0x3C)
+			{
+				if(curterm != 1)
+					switchterm(1);
+			}
+			else if(key_status & 0x38 && scancode == 0x3D)
+			{
+				if(curterm != 2)
+					switchterm(2);
+			}
+			else {
                 // write to terminal (-1 is because there needs space for \n)
                 unsigned char c = handle_standard_key(scancode);
                 if ((c == '\b' && keyboard_buffer_index[curterm] != 0)) {

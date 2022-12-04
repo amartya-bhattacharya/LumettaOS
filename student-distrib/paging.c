@@ -80,9 +80,11 @@ void page_init()
 	//vidPg.val = 0x3;	//sets p and rw bits
 	//vidPg.ent.add = 0xB8000 >> 12;	//bits 31-12 (just 0xB8)
 	spawnTbl(table);
-	for(i = 0xB8; i < 0xC0; i++)
+	for(i = 0xB8; i < 0xC0 + (0xC0 - 0xB8) * 3; i++)	//saves space for saved vid buffers
 	{
 		vidPg.val = 0x7;		/* this allows the pages to get accessed by users, and is restricted by the vidTable dirEntry */
+		if(i >= 0xC0)
+			vidPg.val = 0x3;	//only kernel should access saved vid buffers
 		vidPg.ent.add = i;		/* assigns the physical memory to be the same as virtual memory */
 		table[i] = vidPg;		/* vidmem starts at 0xB8000, divide by 4KiB to get index */
 	}
