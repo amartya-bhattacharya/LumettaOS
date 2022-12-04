@@ -10,6 +10,7 @@
 volatile int32_t curterm;
 //volatile int32_t current_process;
 volatile int32_t procpid[3];
+uint32_t proc_eip[3];
 
 
 void sched_init(void) {
@@ -27,6 +28,8 @@ void switchterm(int32_t t)
 	cli();
 	//printf("switching terms");
 	//while(1);
+
+
 	for(byte = (char*)0xB8000;byte < (char*)0xC0000;byte++)
 	{	//save vid buffer for terminal
 		*save = *byte;

@@ -498,5 +498,63 @@ int32_t sys_sigreturn (void){
 
 void switchproc(uint32_t pid)
 {
+    // task switching steps
+    // 1. save esp and ebp
+    // 2. switch paging, flush tlb
+    uint8_t * entry_point;
+    uint32_t eip;
+    union dirEntry d;
+    pcb_t* p = get_pcb();
+
+    // save esp and ebp
+    // asm volatile(
+    //     "movl %%esp, %0;"
+    //     "movl %%ebp, %1;"
+    //     : "=r"(p->saved_esp), "=r"(p->saved_ebp)
+    // );
+
+    // switch terminal
+    // find the pcb associated with param pid
+    int i;
+    for (i = 0; i < MAX_PROCESSES; i++) {
+        if (pid == curr_pcb[i]->pid) {
+            break;
+        }
+    }
+    
+    d.val = 7;		//sets P and RW bits
+    d.whole.ps = 1;
+	d.whole.add_22_31 = (_8MB + _4MB * pid) >> 22; //bit shift by 22 to access correct address
+	chgDir(32, d);	//32 = 128 / 4 (all programs are in the 128-132 MiB vmem page
+    flushTLB();
+
+    // set up tss
+    tss.ss0 = KERNEL_DS;
+    tss.esp0 = _8MB - curr_pcb[i]->pid * _8KB - 4;
+
+
+    uint32_t user_sp = _132MB - 4;  //find user space
+    entry_point = (uint8_t*)(_8MB + _4MB * i);
+    eip = (((uint32_t)(entry_point[24]) & 0xFF) + (((uint32_t)(entry_point[25]) & 0xFF) << 8) + (((uint32_t)(entry_point[26]) & 0xFF) << 16) + (((uint32_t)(entry_point[27]) & 0xFF) << 24)); //bits [24:27] of executable contain EIP
+
+
+
+    asm volatile(
+        "movw %0, %%ax;"
+        "movw %%ax, %%ds;"
+        "pushl %0;"     // push kernel ds  
+        "pushl %1;"   // push user sp
+        "pushfl;"       // push eflags
+        "popl %%edx;"    // pop eflags
+        "orl $0x200, %%edx;"     // set IF bit
+        "pushl %%edx;"   // push back
+        "pushl %2;"     // push cs
+        "pushl %3;"     // push eip
+        "iret;"
+        :
+        : "g" (USER_DS), "g" (user_sp), "g" (USER_CS), "g" (eip)
+        : "%eax", "%edx"
+    );
+
 	return;
 }
