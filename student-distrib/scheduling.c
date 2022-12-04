@@ -23,18 +23,25 @@ void sched_init(void) {
 void switchterm(int32_t t)
 {
 	char* byte;
-	char* save = (char*)(0xB8 + (0xC0 - 0xB8) * (curterm + 1));
+	char* save = (char*)(0xB8000 + (0xC0000 - 0xB8000) * (curterm + 1));
 	cli();
 	//printf("switching terms");
 	//while(1);
-	for(byte = (char*)0xB8;byte < (char*)0xC0;byte++)
+	for(byte = (char*)0xB8000;byte < (char*)0xC0000;byte++)
 	{	//save vid buffer for terminal
 		*save = *byte;
 		save++;
 	}
 	curterm = t;
+	save = (char*)(0xB8000 + (0xC0000 - 0xB8000) * (curterm + 1));
+	for(byte = (char*)0xB8000;byte < (char*)0xC0000;byte++)
+	{	//restore vid buffer of new term
+		*byte = *save;
+		save++;
+	}
 	if(procpid[t] < 0)
 	{	//when first opening the other terms they'll have no program
+		clear_term();
 		sys_execute((uint8_t*)"shell");
 		return;		//should never reach this
 	}
