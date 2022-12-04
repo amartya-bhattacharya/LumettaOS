@@ -161,14 +161,27 @@ Solution:
 
 
 <--------------------------------------------------------->
-                          BUG ?                          
+                          BUG 13                          
 <--------------------------------------------------------->
 Time:
-    2022.11.14.
+    2022.12.03.
 Creator:
-    First Last.
+    Natasha Sherlock
 Description:
-    ....
+    when running it would take too long to go through the animation
 Solution:
-    ....
+    wasn't calling open and counter was checking equivalance instead of greater than so by the time counter hit that part of the function, it surpassed the value it was looking for
+
+<--------------------------------------------------------->
+                          BUG 14                          
+<--------------------------------------------------------->
+Time:
+    2022.12.03.
+Creator:
+    Natasha Sherlock
+Description:
+    when running syserr we were page faulting
+Solution:
+    weren't checking bounds in open and write
+
 
