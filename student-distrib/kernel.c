@@ -14,6 +14,7 @@
 #include "paging.h"
 #include "filesystem.h"
 #include "syscall.h"
+#include "scheduling.h"
 
 #define RUN_TESTS
 
@@ -153,6 +154,7 @@ void entry(unsigned long magic, unsigned long addr) {
     rtc_init();
     keyboard_init();
     page_init();
+	sched_init();
     printf("size of dentry: %d, inode: %d, bootblock: %d, data: %d\n", sizeof(struct dentry), sizeof(struct inode), sizeof(struct bootblock), sizeof(struct block));
     
     /* Enable interrupts */

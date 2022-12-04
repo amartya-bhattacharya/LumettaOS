@@ -3,14 +3,15 @@
  */
 
 #include "lib.h"
+#include "scheduling.h"
 
 #define VIDEO       0xB8000
 #define NUM_COLS    80
 #define NUM_ROWS    25
 #define ATTRIB      0x7
 
-static int screen_x;
-static int screen_y;
+static int screen_x[3];
+static int screen_y[3];
 static char* video_mem = (char *)VIDEO;
 
 /* void clear(void);
@@ -170,14 +171,14 @@ int32_t puts(int8_t* s) {
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {
-        screen_y++;
-        screen_x = 0;
+        screen_y[curterm]++;
+        screen_x[curterm] = 0;
     } else {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        screen_x++;
-        screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[curterm] + screen_x[curterm]) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[curterm] + screen_x[curterm]) << 1) + 1) = ATTRIB;
+        screen_x[curterm]++;
+        screen_x[curterm] %= NUM_COLS;
+        screen_y[curterm] = (screen_y[curterm] + (screen_x[curterm] / NUM_COLS)) % NUM_ROWS;
     }
 }
 
@@ -508,7 +509,7 @@ void scroll_term()
  */
 void move_cursor(void) {
     int pos;
-    pos = screen_y * NUM_COLS + screen_x;   /* Row-major indexing */
+    pos = screen_y[curterm] * NUM_COLS + screen_x[curterm];   /* Row-major indexing */
     outb(0x0E, 0x3D4);                      /* Set high byte of VGA cursor */
     outb((pos >> 8) & 0xFF, 0x3D5);         /* Send high byte */
     outb(0x0F, 0x3D4);                      /* Set low byte of VGA cursor */
@@ -524,8 +525,8 @@ void move_cursor(void) {
  */
 void clear_term(void) {
     clear();
-    screen_x = 0;
-    screen_y = 0;
+    screen_x[curterm] = 0;
+    screen_y[curterm] = 0;
     move_cursor();
 }
 
@@ -539,17 +540,17 @@ void clear_term(void) {
  */
 void backspace_pressed(void)
 {
-    if (screen_x == 0){
-        if (screen_y != 0){
-            screen_x = NUM_COLS - 1;
-            screen_y--;
+    if (screen_x[curterm] == 0){
+        if (screen_y[curterm] != 0){
+            screen_x[curterm] = NUM_COLS - 1;
+            screen_y[curterm]--;
         }
     }
     else {
-        screen_x--;
+        screen_x[curterm]--;
     }
-    *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
-    *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+    *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[curterm] + screen_x[curterm]) << 1)) = ' ';
+    *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[curterm] + screen_x[curterm]) << 1) + 1) = ATTRIB;
 }
 
 
@@ -563,29 +564,29 @@ void putc_term(unsigned char c) {
         backspace_pressed();
     // handle tab
     } else if (c == '\t') {
-        screen_x = (screen_x + 4); // & ~(4 - 1);
+        screen_x[curterm] = (screen_x[curterm] + 4); // & ~(4 - 1);
     } else if (c == '\r') {
-        screen_x = 0;
+        screen_x[curterm] = 0;
     } else if (c == '\n') {
-        screen_y++;
-        screen_x = 0;
+        screen_y[curterm]++;
+        screen_x[curterm] = 0;
     } else if (c >= ' ') {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        screen_x++;
-		if(screen_x >= NUM_COLS)
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[curterm] + screen_x[curterm]) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[curterm] + screen_x[curterm]) << 1) + 1) = ATTRIB;
+        screen_x[curterm]++;
+		if(screen_x[curterm] >= NUM_COLS)
 		{
-			if(screen_y == 24)
+			if(screen_y[curterm] == 24)
 				scroll_term();
 			else
-				screen_y++;
+				screen_y[curterm]++;
 		}
-        screen_x %= NUM_COLS;
+        screen_x[curterm] %= NUM_COLS;
     }
-	if (screen_y >= NUM_ROWS)
+	if (screen_y[curterm] >= NUM_ROWS)
 	{
 		scroll_term();
-        screen_y = NUM_ROWS - 1;
+        screen_y[curterm] = NUM_ROWS - 1;
 	}
 	move_cursor();
 }

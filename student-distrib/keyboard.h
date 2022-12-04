@@ -20,8 +20,8 @@
 #define KEYBOARD_BUFFER_SIZE 128
 
 /* Externally-visible variables */
-extern char keyboard_buffer[128];
-volatile extern int enterpress;
+extern char keyboard_buffer[3][128];
+volatile extern int enterpress;	//there might be a bug if I don't make 3 copies of this but it would be exceedingly rare
 
 /* Externally-visible functions */
 

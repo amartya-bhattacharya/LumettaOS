@@ -9,6 +9,7 @@
 #include "x86_desc.h"
 #include "rtc.h"
 #include "terminal.h"
+#include "scheduling.h"
 
 
 /* Local variables */
@@ -164,7 +165,7 @@ int32_t sys_execute(const uint8_t * command) {
     // set up and load pcb (setup fd[0] and fd[1])
     curr_pcb[pcb_index]->pid = pcb_index;
     curr_pcb[pcb_index]->active = 1;
-    curr_pcb[pcb_index]->parent_pid = curr_pcb[pcb_index]->pid - 1;
+    curr_pcb[pcb_index]->parent_pid = procpid[curterm];	//now with multiple terminals the pid that calls can be anyone
     curr_pcb[pcb_index]->saved_esp = _8MB - 1;
     curr_pcb[pcb_index]->file_desc_tb[0].flag = 1;
     curr_pcb[pcb_index]->file_desc_tb[0].f_op = &terminal_op_table;
@@ -493,4 +494,9 @@ int32_t sys_sethandler (int32_t signum, void* handler_address){
 */
 int32_t sys_sigreturn (void){
     return -1;
+}
+
+void switchproc(uint32_t pid)
+{
+	return;
 }

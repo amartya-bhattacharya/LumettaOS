@@ -7,13 +7,14 @@
 #include "lib.h"
 #include "types.h"
 #include "terminal.h"
+#include "scheduling.h"
 
 
 /* Local variables */
 // keyboard buffer
-char keyboard_buffer[KEYBOARD_BUFFER_SIZE] = {0};
+char keyboard_buffer[3][KEYBOARD_BUFFER_SIZE];
 // keyboard buffer index
-volatile int keyboard_buffer_index = 0;
+volatile int keyboard_buffer_index[3] = {0, 0, 0};
 // special key flag
 volatile uint8_t key_status = 0;
 volatile int enterpress = 0;
@@ -227,38 +228,38 @@ void keyboard_handler(void) {
             } else {
                 // write to terminal (-1 is because there needs space for \n)
                 unsigned char c = handle_standard_key(scancode);
-                if ((c == '\b' && keyboard_buffer_index != 0)) {
-                    if (keyboard_buffer[keyboard_buffer_index - 1] == '\t') {
+                if ((c == '\b' && keyboard_buffer_index[curterm] != 0)) {
+                    if (keyboard_buffer[curterm][keyboard_buffer_index[curterm] - 1] == '\t') {
                         // handle tab backspace
                         for (i = 0; i < 4; i++) {
                             backspace_pressed();
                             move_cursor();
                         }
-                    } else if (keyboard_buffer_index != 0) {
+                    } else if (keyboard_buffer_index[curterm] != 0) {
                         putc_term(c);
                     }
-                    keyboard_buffer_index--;
+                    keyboard_buffer_index[curterm]--;
                 }
-                else if (keyboard_buffer_index < KEYBOARD_BUFFER_SIZE - 1 && c != '\b') {
+                else if (keyboard_buffer_index[curterm] < KEYBOARD_BUFFER_SIZE - 1 && c != '\b') {
                     // backspace normal character
                     putc_term(c);
                 }
                 // write to keyboard buffer
-                if (c != 0 && keyboard_buffer_index < KEYBOARD_BUFFER_SIZE - 1 && c != '\b') {
-                    keyboard_buffer[keyboard_buffer_index] = c;
-                    keyboard_buffer_index++;
+                if (c != 0 && keyboard_buffer_index[curterm] < KEYBOARD_BUFFER_SIZE - 1 && c != '\b') {
+                    keyboard_buffer[curterm][keyboard_buffer_index[curterm]] = c;
+                    keyboard_buffer_index[curterm]++;
                 }
 				if (c == '\n')
 				{
-					if(keyboard_buffer_index == KEYBOARD_BUFFER_SIZE - 1)
+					if(keyboard_buffer_index[curterm] == KEYBOARD_BUFFER_SIZE - 1)
 					{	//edge case if newline is last char
-						keyboard_buffer[keyboard_buffer_index] = c;
-						keyboard_buffer_index++;
+						keyboard_buffer[curterm][keyboard_buffer_index[curterm]] = c;
+						keyboard_buffer_index[curterm]++;
 						putc_term(c);
 					}
                     enterpress = 1;
 					// terminal_write(0, keyboard_buffer, keyboard_buffer_index);      // TODO move this into tests.c
-					keyboard_buffer_index = 0;
+					keyboard_buffer_index[curterm] = 0;
                     // memset(keyboard_buffer, 0, 128);
 				}
             }

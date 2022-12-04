@@ -6,11 +6,12 @@
 #include "i8259.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "scheduling.h"
 
 /* Local variables */
 volatile int rtc_interrupt_occurred = 0;    // flag for RTC interrupt
-volatile int rtc_counter = 0; // counter for RTC interrupts
-volatile int rtc_max_count = RTC_MAX_FREQ / RTC_BASE_FREQ; // max number of interrupts before RTC interrupt occurs
+volatile int rtc_counter[3] = {0}; // counter for RTC interrupts
+volatile int rtc_max_count[3];
 
 /* Local functions */
 /* Set the RTC rate to the given frequency */
@@ -62,7 +63,7 @@ void rtc_init(void) {
     outb(RTC_REG_B, RTC_PORT);          /* set the index again (a read will reset the index to register D) */
     outb(prev | 0x40, RTC_DATA);        /* write the previous value ORed with 0x40 */
     #if RTC_VT_EN
-    rtc_max_count = RTC_MAX_FREQ / RTC_BASE_FREQ;   /* set the max count to the default frequency */
+    rtc_max_count[curterm] = RTC_MAX_FREQ / RTC_BASE_FREQ;   /* set the max count to the default frequency */
     rtc_set_rate(RTC_MAX_FREQ);         /* set the frequency to 1024 Hz */
     #else
     rtc_set_rate(RTC_BASE_FREQ);        /* set the frequency to 2 Hz */
@@ -109,10 +110,10 @@ int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes) {
         return -1;
 
     #if RTC_VT_EN
-    cli();
-    rtc_max_count = RTC_MAX_FREQ / freq;    /* set the max count to the requested frequency */
-    rtc_counter = 0;
-    sti();
+    //cli();
+    rtc_max_count[curterm] = RTC_MAX_FREQ / freq;    /* set the max count to the requested frequency */
+    rtc_counter[curterm] = 0;
+    //sti();
     #else
     rtc_set_rate(freq);
     #endif
@@ -133,7 +134,7 @@ int32_t rtc_open(const uint8_t* filename) {
         return -1;                                      /* if the named file does not exist, the call returns -1 */
 
     #if RTC_VT_EN
-    rtc_max_count = RTC_MAX_FREQ / RTC_BASE_FREQ;       /* set the max count to the default frequency */
+    rtc_max_count[curterm] = RTC_MAX_FREQ / RTC_BASE_FREQ;       /* set the max count to the default frequency */
     rtc_interrupt_occurred = 0;                         /* set the status to open */
     #else
     rtc_set_rate(RTC_BASE_FREQ);                        /* set the frequency to 2 Hz */
@@ -171,10 +172,10 @@ void rtc_handler(void) {
     cli();                                  /* disable interrupts */
 
     #if RTC_VT_EN
-    rtc_counter++;                          /* increment the counter */
-    if (rtc_counter >= rtc_max_count) {     /* if the counter reaches the max count */
+    rtc_counter[curterm]++;                          /* increment the counter */
+    if (rtc_counter[curterm] >= rtc_max_count[curterm]) {     /* if the counter reaches the max count */
         rtc_interrupt_occurred = 1;         /* set the status to closed */
-        rtc_counter = 0;                    /* reset the counter */
+        rtc_counter[curterm] = 0;                    /* reset the counter */
     }
     #else
     rtc_interrupt_occurred = 1;             /* set the status to closed */

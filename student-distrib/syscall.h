@@ -47,6 +47,8 @@ int32_t sys_vidmap (uint8_t** screen_start);
 int32_t sys_sethandler (int32_t signum, void* handler_address);
 int32_t sys_sigreturn (void);
 
+void switchproc(uint32_t pid);
+
 /* Wrapper function for syscall handler */
 void syscall_wrapper();
 extern void setup_context_switch(uint32_t esp, uint32_t eip);

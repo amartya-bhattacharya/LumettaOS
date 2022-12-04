@@ -5,6 +5,7 @@
 #include "terminal.h"
 #include "lib.h"
 #include "keyboard.h"
+#include "scheduling.h"
 
 /* Local variables */
 // must have a separate input buffer for each terminal
@@ -43,14 +44,14 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     i = 0;
     while(!enterpress);
     for (i = 0; i < 128; i++) {
-        if ((char) keyboard_buffer[i] == '\n')
+        if ((char) keyboard_buffer[curterm][i] == '\n')
         break;
     }
 
     //clear buffer
     //putc(i + '0');
-    strncpy((char*)buf, keyboard_buffer, i + 1);
-    memset(keyboard_buffer, 0, 128);
+    strncpy((char*)buf, keyboard_buffer[curterm], i + 1);
+    memset(keyboard_buffer[curterm], 0, 128);
     enterpress = 0;
     // add newline character to the end of the buffer
     // *((char*)buf + i + 1) = '\n';
